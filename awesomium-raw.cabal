@@ -11,6 +11,11 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 library
-  -- exposed-modules:     
-  -- other-modules:       
-  build-depends:       base ==4.5.*
+  exposed-modules:  Graphics.UI.Awesomium.Raw
+  -- other-modules:    C2HS
+  build-tools:      c2hs
+  build-depends:    base ==4.5.*
+  hs-source-dirs:   src
+  include-dirs:     include
+  extra-libraries:  awesomium-1.6.5
+  extra-lib-dirs:   /usr/lib/awesomium-1.6.5
