@@ -2,6 +2,8 @@
 module Graphics.UI.Awesomium.Raw where
 
 import Foreign.C.Types
+import Foreign.C.String
+import Foreign.Marshal
 import Foreign.Ptr
 import Foreign.Storable
 import C2HS
@@ -21,34 +23,34 @@ data DWebView
 data DJSValue
 {#pointer *jsvalue as JSValue -> DJSValue #}
 -- | JSArray instance
-data JSArray 
+data DJSArray 
 {#pointer *jsarray as JSArray -> DJSArray #}
 -- | JSObject instance
-data JSObject 
+data DJSObject 
 {#pointer *jsobject as JSObject -> DJSObject #}
 -- | RenderBuffer instance, owned by the WebView
-data RenderBuffer 
+data DRenderBuffer 
 {#pointer *renderbuffer as RenderBuffer -> DRenderBuffer #}
 -- | HeaderDefinition instance
-data HeaderDefinition 
+data DHeaderDefinition 
 {#pointer *header_definition as HeaderDefinition -> DHeaderDefinition #}
 -- | ResourceResponse instance
-data ResourceResponse 
+data DResourceResponse 
 {#pointer *resource_response as ResourceResponse -> DResourceResponse #}
 -- | ResourceRequest instance
-data ResourceRequest 
+data DResourceRequest 
 {#pointer *resource_request as ResourceRequest -> DResourceRequest #}
 -- | UploadElement instance
-data UploadElement 
+data DUploadElement 
 {#pointer *upload_element as UploadElement -> DUploadElement #}
 -- | String instance
 data DAweString
 {#pointer *awe_string as AweString -> DAweString #}
 -- | HistoryQueryResult instance
-data HistoryQueryResult 
+data DHistoryQueryResult 
 {#pointer *history_query_result as HistoryQueryResult -> DHistoryQueryResult #}
 -- | HistoryEntry instance
-data HistoryEntry 
+data DHistoryEntry 
 {#pointer *history_entry as HistoryEntry -> DHistoryEntry #}
 
 {#enum loglevel as LogLevel {underscoreToCase}#}
@@ -126,13 +128,12 @@ typedef struct _awe_rect
 {#fun unsafe awe_string_get_length { id `AweString' } -> `Int' fromIntegral #}
 -- {#fun unsafe awe_string_get_utf16 { id `AweString' } -> `String' #}
 -- {#fun unsafe awe_string_to_wide { id `AweString' , `String'& } -> `Int' #}
--- {#fun unsafe awe_string_to_utf8 { id `AweString' , alloca- `String' peekCStr* } -> `Int' #}
+-- {#fun unsafe awe_string_to_utf8 { id `AweString' , alloca- `String'& peekCStringLen* } -> `Int' #}
 
 {-----------------------
  - Web Core Functions  -
  -----------------------}
-
-{#fun unsafe awe_webcore_initialize { `Bool', `Bool', `Bool', id `AweString', id `AweString', id `AweString', id `AweString', id `AweString', id `LogLevel', `Bool', id `AweString', `Bool', id `AweString', id `AweString', id `AweString', id `AweString', id `AweString', id `AweString', `Bool', `Int', `Bool', `Bool', id `AweString' } -> `()' #}
+{#fun unsafe awe_webcore_initialize { `Bool', `Bool', `Bool', id `AweString', id `AweString', id `AweString', id `AweString', id `AweString', cFromEnum `LogLevel', `Bool', id `AweString', `Bool', id `AweString', id `AweString', id `AweString', id `AweString', id `AweString', id `AweString', `Bool', `Int', `Bool', `Bool', id `AweString' } -> `()' #}
 {#fun unsafe awe_webcore_initialize_default { } -> `()' #}
 {#fun unsafe awe_webcore_shutdown { } -> `()' #}
 {#fun unsafe awe_webcore_set_base_directory { id `AweString' } -> `()' #}
@@ -178,8 +179,8 @@ typedef struct _awe_rect
 {#fun unsafe awe_webview_pause_rendering { id `WebView' } -> `()' #}
 {#fun unsafe awe_webview_resume_rendering { id `WebView' } -> `()' #}
 {#fun unsafe awe_webview_inject_mouse_move { id `WebView', `Int', `Int' } -> `()' #}
-{#fun unsafe awe_webview_inject_mouse_down { id `WebView', id `MouseButton' } -> `()' #}
-{#fun unsafe awe_webview_inject_mouse_up { id `WebView', id `MouseButton' } -> `()' #}
+{#fun unsafe awe_webview_inject_mouse_down { id `WebView', cFromEnum `MouseButton' } -> `()' #}
+{#fun unsafe awe_webview_inject_mouse_up { id `WebView', cFromEnum `MouseButton' } -> `()' #}
 {#fun unsafe awe_webview_inject_mouse_wheel { id `WebView', `Int', `Int' } -> `()' #}
 -- {#fun unsafe awe_webview_inject_keyboard_event { id `WebView', awe_webkeyboardevent key_event } -> `()' #}
 
@@ -202,7 +203,7 @@ typedef struct _awe_rect
 {#fun unsafe awe_webview_focus { id `WebView' } -> `()' #}
 {#fun unsafe awe_webview_set_transparent { id `WebView', `Bool' } -> `()' #}
 {#fun unsafe awe_webview_is_transparent { id `WebView' } -> `Bool' #}
-{#fun unsafe awe_webview_set_url_filtering_mode { id `WebView', fromEnum `UrlFilteringMode' } -> `()' #}
+{#fun unsafe awe_webview_set_url_filtering_mode { id `WebView', cFromEnum `UrlFilteringMode' } -> `()' #}
 {#fun unsafe awe_webview_add_url_filter { id `WebView', id `AweString' } -> `()' #}
 {#fun unsafe awe_webview_clear_all_url_filters { id `WebView' } -> `()' #}
 {#fun unsafe awe_webview_set_header_definition { id `WebView', id `AweString', fromIntegral `Int' , id `Ptr AweString', id `Ptr AweString' } -> `()' #}
@@ -265,7 +266,7 @@ typedef struct _awe_rect
 {#fun unsafe awe_jsvalue_create_object_value { id `JSObject' } -> `JSValue' id #}
 {#fun unsafe awe_jsvalue_create_array_value { id `JSArray' } -> `JSValue' id #}
 {#fun unsafe awe_jsvalue_destroy { id `JSValue' } -> `()' #}
-{#fun unsafe awe_jsvalue_get_type { id `JSValue' } -> `JSValueType' id #}
+{#fun unsafe awe_jsvalue_get_type { id `JSValue' } -> `JSValueType' cToEnum #}
 {#fun unsafe awe_jsvalue_to_string { id `JSValue' } -> `AweString' id #}
 {#fun unsafe awe_jsvalue_to_integer { id `JSValue' } -> `Int' #}
 {#fun unsafe awe_jsvalue_to_double { id `JSValue' } -> `Double' #}
@@ -296,7 +297,7 @@ typedef struct _awe_rect
 {#fun unsafe awe_renderbuffer_get_width { id `RenderBuffer' } -> `Int' #}
 {#fun unsafe awe_renderbuffer_get_height { id `RenderBuffer' } -> `Int' #}
 {#fun unsafe awe_renderbuffer_get_rowspan { id `RenderBuffer' } -> `Int' #}
-{#fun unsafe awe_renderbuffer_get_buffer { id `RenderBuffer' } -> `Ptr CChar' id #}
+{#fun unsafe awe_renderbuffer_get_buffer { id `RenderBuffer' } -> `Ptr CUChar' id #}
 -- {#fun unsafe awe_renderbuffer_copy_to { id `RenderBuffer', unsigned char* dest_buffer, `Int', `Int', `Bool', `Bool' } -> `()' #}
 -- {#fun unsafe awe_renderbuffer_copy_to_float { id `RenderBuffer', float* dest_buffer } -> `()' #}
 {#fun unsafe awe_renderbuffer_save_to_png { id `RenderBuffer', id `AweString', `Bool' } -> `Bool' #}
