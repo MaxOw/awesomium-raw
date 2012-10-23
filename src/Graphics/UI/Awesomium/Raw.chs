@@ -119,8 +119,12 @@ typedef struct _awe_rect
 #endif
 -}
 
+{-----------------------
+ - AweString Functions -
+ -----------------------}
+
 {#fun unsafe awe_string_empty { } -> `AweString' id #}
-{#fun unsafe awe_string_create_from_ascii { `String'& } -> `AweString' id #}
+-- {#fun unsafe awe_string_create_from_ascii { `String'& } -> `AweString' id #}
 -- {#fun unsafe awe_string_create_from_wide { `String'& } -> `AweString' id #}
 {#fun unsafe awe_string_create_from_utf8 { `String'& } -> `AweString' id #}
 -- {#fun unsafe awe_string_create_from_utf16 { `String'& } -> `AweString' id #}
@@ -128,50 +132,77 @@ typedef struct _awe_rect
 {#fun unsafe awe_string_get_length { id `AweString' } -> `Int' fromIntegral #}
 -- {#fun unsafe awe_string_get_utf16 { id `AweString' } -> `String' #}
 -- {#fun unsafe awe_string_to_wide { id `AweString' , `String'& } -> `Int' #}
--- {#fun unsafe awe_string_to_utf8 { id `AweString' , alloca- `String'& peekCStringLen* } -> `Int' #}
+-- {#fun unsafe awe_string_to_utf8 { id `AweString' , id- `String' peekCString*, id `()' } -> `Int' #}
+
+foreign import ccall unsafe "Graphics/UI/Awesomium/Raw.chs.h awe_string_to_utf8"
+    awe_string_to_utf8'_ :: AweString -> Ptr CChar -> CULong -> IO CInt
+
+awe_string_to_utf8 :: AweString -> IO (String)
+awe_string_to_utf8 a1 = do
+    len <- awe_string_get_length a1
+    allocaBytes len $ \buf -> do
+        awe_string_to_utf8'_ a1 buf (cIntConv len)
+        peekCStringLen (buf, (cIntConv len))
+
+fromAweString :: AweString -> IO (String)
+fromAweString = awe_string_to_utf8
+
+fromAweStringDestroy :: AweString -> IO (String)
+fromAweStringDestroy as = do
+    res <- awe_string_to_utf8 as
+    awe_string_destroy as
+    return res
+
+withAweString :: String -> (AweString -> IO b) -> IO b
+withAweString str f = do
+    -- bracket (awe_string_create_from_utf8 str) awe_string_destroy f
+    as <- awe_string_create_from_utf8 str
+    res <- f as
+    awe_string_destroy as
+    return res
 
 {-----------------------
  - Web Core Functions  -
  -----------------------}
-{#fun unsafe awe_webcore_initialize { `Bool', `Bool', `Bool', id `AweString', id `AweString', id `AweString', id `AweString', id `AweString', cFromEnum `LogLevel', `Bool', id `AweString', `Bool', id `AweString', id `AweString', id `AweString', id `AweString', id `AweString', id `AweString', `Bool', `Int', `Bool', `Bool', id `AweString' } -> `()' #}
+
+{#fun unsafe awe_webcore_initialize { `Bool', `Bool', `Bool', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String', cFromEnum `LogLevel', `Bool', withAweString* `String', `Bool', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String', `Bool', `Int', `Bool', `Bool', withAweString* `String' } -> `()' #}
 {#fun unsafe awe_webcore_initialize_default { } -> `()' #}
 {#fun unsafe awe_webcore_shutdown { } -> `()' #}
-{#fun unsafe awe_webcore_set_base_directory { id `AweString' } -> `()' #}
+{#fun unsafe awe_webcore_set_base_directory { withAweString* `String' } -> `()' #}
 {#fun unsafe awe_webcore_create_webview { `Int', `Int', `Bool' } -> `WebView' id #}
-{#fun unsafe awe_webcore_set_custom_response_page { `Int', id `AweString' } -> `()' #}
+{#fun unsafe awe_webcore_set_custom_response_page { `Int', withAweString* `String' } -> `()' #}
 {#fun unsafe awe_webcore_update { } -> `()' #}
 {#fun unsafe awe_webcore_get_base_directory { } -> `AweString' id #}
 {#fun unsafe awe_webcore_are_plugins_enabled { } -> `Bool' #}
 {#fun unsafe awe_webcore_clear_cache { } -> `()' #}
 {#fun unsafe awe_webcore_clear_cookies { } -> `()' #}
-{#fun unsafe awe_webcore_set_cookie { id `AweString', id `AweString', `Bool', `Bool' } -> `()' #}
-{#fun unsafe awe_webcore_get_cookies { id `AweString', `Bool' } -> `AweString' id #}
-{#fun unsafe awe_webcore_delete_cookie { id `AweString', id `AweString' } -> `()' #}
+{#fun unsafe awe_webcore_set_cookie { withAweString* `String', withAweString* `String', `Bool', `Bool' } -> `()' #}
+{#fun unsafe awe_webcore_get_cookies { withAweString* `String', `Bool' } -> `AweString' id #}
+{#fun unsafe awe_webcore_delete_cookie { withAweString* `String', withAweString* `String' } -> `()' #}
 {#fun unsafe awe_webcore_set_suppress_printer_dialog { `Bool' } -> `()' #}
-{#fun unsafe awe_webcore_query_history { id `AweString', `Int', `Int' } -> `HistoryQueryResult' id #}
-
+{#fun unsafe awe_webcore_query_history { withAweString* `String', `Int', `Int' } -> `HistoryQueryResult' id #}
 
 {-----------------------
  - Web View Functions  -
  -----------------------}
 
 {#fun unsafe awe_webview_destroy { id `WebView' } -> `()' #}
-{#fun unsafe awe_webview_load_url { id `WebView', id `AweString', id `AweString', id `AweString', id `AweString' } -> `()' #}
-{#fun unsafe awe_webview_load_html { id `WebView', id `AweString', id `AweString' } -> `()' #}
-{#fun unsafe awe_webview_load_file { id `WebView', id `AweString', id `AweString' } -> `()' #}
-{#fun unsafe awe_webview_get_url { id `WebView' } -> `AweString' id #}
+{#fun unsafe awe_webview_load_url { id `WebView', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String' } -> `()' #}
+{#fun unsafe awe_webview_load_html { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
+{#fun unsafe awe_webview_load_file { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
+{#fun unsafe awe_webview_get_url { id `WebView' } -> `String' fromAweStringDestroy* #}
 {#fun unsafe awe_webview_go_to_history_offset { id `WebView', `Int' } -> `()' #}
 {#fun unsafe awe_webview_get_history_back_count { id `WebView' } -> `Int' #}
 {#fun unsafe awe_webview_get_history_forward_count { id `WebView' } -> `Int' #}
 {#fun unsafe awe_webview_stop { id `WebView' } -> `()' #}
 {#fun unsafe awe_webview_reload { id `WebView' } -> `()' #}
-{#fun unsafe awe_webview_execute_javascript { id `WebView', id `AweString', id `AweString' } -> `()' #}
-{#fun unsafe awe_webview_execute_javascript_with_result { id `WebView', id `AweString', id `AweString', `Int' } -> `JSValue' id #}
-{#fun unsafe awe_webview_call_javascript_function { id `WebView', id `AweString', id `AweString', id `JSArray', id `AweString' } -> `()' #}
-{#fun unsafe awe_webview_create_object { id `WebView', id `AweString' } -> `()' #}
-{#fun unsafe awe_webview_destroy_object { id `WebView', id `AweString' } -> `()' #}
-{#fun unsafe awe_webview_set_object_property { id `WebView', id `AweString', id `AweString', id `JSValue' } -> `()' #}
-{#fun unsafe awe_webview_set_object_callback { id `WebView', id `AweString', id `AweString' } -> `()' #}
+{#fun unsafe awe_webview_execute_javascript { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
+{#fun unsafe awe_webview_execute_javascript_with_result { id `WebView', withAweString* `String', withAweString* `String', `Int' } -> `JSValue' id #}
+{#fun unsafe awe_webview_call_javascript_function { id `WebView', withAweString* `String', withAweString* `String', id `JSArray', withAweString* `String' } -> `()' #}
+{#fun unsafe awe_webview_create_object { id `WebView', withAweString* `String' } -> `()' #}
+{#fun unsafe awe_webview_destroy_object { id `WebView', withAweString* `String' } -> `()' #}
+{#fun unsafe awe_webview_set_object_property { id `WebView', withAweString* `String', withAweString* `String', id `JSValue' } -> `()' #}
+{#fun unsafe awe_webview_set_object_callback { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
 {#fun unsafe awe_webview_is_loading_page { id `WebView' } -> `Bool' #}
 {#fun unsafe awe_webview_is_dirty { id `WebView' } -> `Bool' #}
 -- {#fun unsafe awe_webview_get_dirty_bounds { id `WebView' } -> awe_rect #}
@@ -196,7 +227,7 @@ typedef struct _awe_rect
 {#fun unsafe awe_webview_set_zoom { id `WebView', `Int' } -> `()' #}
 {#fun unsafe awe_webview_reset_zoom { id `WebView' } -> `()' #}
 {#fun unsafe awe_webview_get_zoom { id `WebView' } -> `Int' #}
-{#fun unsafe awe_webview_get_zoom_for_host { id `WebView', id `AweString' } -> `Int' #}
+{#fun unsafe awe_webview_get_zoom_for_host { id `WebView', withAweString* `String' } -> `Int' #}
 {#fun unsafe awe_webview_resize { id `WebView', `Int', `Int', `Bool', `Int' } -> `Bool' #}
 {#fun unsafe awe_webview_is_resizing { id `WebView' } -> `Bool' #}
 {#fun unsafe awe_webview_unfocus { id `WebView' } -> `()' #}
@@ -204,25 +235,25 @@ typedef struct _awe_rect
 {#fun unsafe awe_webview_set_transparent { id `WebView', `Bool' } -> `()' #}
 {#fun unsafe awe_webview_is_transparent { id `WebView' } -> `Bool' #}
 {#fun unsafe awe_webview_set_url_filtering_mode { id `WebView', cFromEnum `UrlFilteringMode' } -> `()' #}
-{#fun unsafe awe_webview_add_url_filter { id `WebView', id `AweString' } -> `()' #}
+{#fun unsafe awe_webview_add_url_filter { id `WebView', withAweString* `String' } -> `()' #}
 {#fun unsafe awe_webview_clear_all_url_filters { id `WebView' } -> `()' #}
-{#fun unsafe awe_webview_set_header_definition { id `WebView', id `AweString', fromIntegral `Int' , id `Ptr AweString', id `Ptr AweString' } -> `()' #}
-{#fun unsafe awe_webview_add_header_rewrite_rule { id `WebView', id `AweString', id `AweString' } -> `()' #}
-{#fun unsafe awe_webview_remove_header_rewrite_rule { id `WebView', id `AweString' } -> `()' #}
-{#fun unsafe awe_webview_remove_header_rewrite_rules_by_definition_name { id `WebView', id `AweString' } -> `()' #}
-{#fun unsafe awe_webview_choose_file { id `WebView', id `AweString' } -> `()' #}
+{#fun unsafe awe_webview_set_header_definition { id `WebView', withAweString* `String', fromIntegral `Int' , id `Ptr AweString', id `Ptr AweString' } -> `()' #}
+{#fun unsafe awe_webview_add_header_rewrite_rule { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
+{#fun unsafe awe_webview_remove_header_rewrite_rule { id `WebView', withAweString* `String' } -> `()' #}
+{#fun unsafe awe_webview_remove_header_rewrite_rules_by_definition_name { id `WebView', withAweString* `String' } -> `()' #}
+{#fun unsafe awe_webview_choose_file { id `WebView', withAweString* `String' } -> `()' #}
 {#fun unsafe awe_webview_print { id `WebView' } -> `()' #}
-{#fun unsafe awe_webview_request_scroll_data { id `WebView', id `AweString' } -> `()' #}
-{#fun unsafe awe_webview_find { id `WebView', `Int', id `AweString', `Bool', `Bool', `Bool' } -> `()' #}
+{#fun unsafe awe_webview_request_scroll_data { id `WebView', withAweString* `String' } -> `()' #}
+{#fun unsafe awe_webview_find { id `WebView', `Int', withAweString* `String', `Bool', `Bool', `Bool' } -> `()' #}
 {#fun unsafe awe_webview_stop_find { id `WebView', `Bool' } -> `()' #}
-{#fun unsafe awe_webview_translate_page { id `WebView', id `AweString', id `AweString' } -> `()' #}
+{#fun unsafe awe_webview_translate_page { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
 {#fun unsafe awe_webview_activate_ime { id `WebView', `Bool' } -> `()' #}
-{#fun unsafe awe_webview_set_ime_composition { id `WebView', id `AweString', `Int', `Int', `Int' } -> `()' #}
-{#fun unsafe awe_webview_confirm_ime_composition { id `WebView', id `AweString' } -> `()' #}
+{#fun unsafe awe_webview_set_ime_composition { id `WebView', withAweString* `String', `Int', `Int', `Int' } -> `()' #}
+{#fun unsafe awe_webview_confirm_ime_composition { id `WebView', withAweString* `String' } -> `()' #}
 {#fun unsafe awe_webview_cancel_ime_composition { id `WebView' } -> `()' #}
-{#fun unsafe awe_webview_login { id `WebView', `Int', id `AweString', id `AweString' } -> `()' #}
+{#fun unsafe awe_webview_login { id `WebView', `Int', withAweString* `String', withAweString* `String' } -> `()' #}
 {#fun unsafe awe_webview_cancel_login { id `WebView', `Int' } -> `()' #}
-{#fun unsafe awe_webview_close_javascript_dialog { id `WebView', `Int', `Bool', id `AweString' } -> `()' #}
+{#fun unsafe awe_webview_close_javascript_dialog { id `WebView', `Int', `Bool', withAweString* `String' } -> `()' #}
 {-
 {#fun unsafe awe_webview_set_callback_begin_navigation { id `WebView', void (*callback } -> `()' #}
 {#fun unsafe awe_webview_set_callback_begin_loading { id `WebView', void (*callback } -> `()' #}
@@ -262,12 +293,12 @@ typedef struct _awe_rect
 {#fun unsafe awe_jsvalue_create_bool_value { `Bool' } -> `JSValue' id #}
 {#fun unsafe awe_jsvalue_create_integer_value { `Int' } -> `JSValue' id #}
 {#fun unsafe awe_jsvalue_create_double_value { `Double' } -> `JSValue' id #}
-{#fun unsafe awe_jsvalue_create_string_value { id `AweString' } -> `JSValue' id #}
+{#fun unsafe awe_jsvalue_create_string_value { withAweString* `String' } -> `JSValue' id #}
 {#fun unsafe awe_jsvalue_create_object_value { id `JSObject' } -> `JSValue' id #}
 {#fun unsafe awe_jsvalue_create_array_value { id `JSArray' } -> `JSValue' id #}
 {#fun unsafe awe_jsvalue_destroy { id `JSValue' } -> `()' #}
 {#fun unsafe awe_jsvalue_get_type { id `JSValue' } -> `JSValueType' cToEnum #}
-{#fun unsafe awe_jsvalue_to_string { id `JSValue' } -> `AweString' id #}
+{#fun unsafe awe_jsvalue_to_string { id `JSValue' } -> `String' fromAweStringDestroy* #}
 {#fun unsafe awe_jsvalue_to_integer { id `JSValue' } -> `Int' #}
 {#fun unsafe awe_jsvalue_to_double { id `JSValue' } -> `Double' #}
 {#fun unsafe awe_jsvalue_to_boolean { id `JSValue' } -> `Bool' #}
@@ -284,9 +315,9 @@ typedef struct _awe_rect
 
 {#fun unsafe awe_jsobject_create { } -> `JSObject' id #}
 {#fun unsafe awe_jsobject_destroy { id `JSObject' } -> `()' #}
-{#fun unsafe awe_jsobject_has_property { id `JSObject', id `AweString' } -> `Bool' #}
-{#fun unsafe awe_jsobject_get_property { id `JSObject', id `AweString' } -> `JSValue' id #}
-{#fun unsafe awe_jsobject_set_property { id `JSObject', id `AweString', id `JSValue' } -> `()' #}
+{#fun unsafe awe_jsobject_has_property { id `JSObject', withAweString* `String' } -> `Bool' #}
+{#fun unsafe awe_jsobject_get_property { id `JSObject', withAweString* `String' } -> `JSValue' id #}
+{#fun unsafe awe_jsobject_set_property { id `JSObject', withAweString* `String', id `JSValue' } -> `()' #}
 {#fun unsafe awe_jsobject_get_size { id `JSObject' } -> `Int' fromIntegral #}
 {#fun unsafe awe_jsobject_get_keys { id `JSObject' } -> `JSArray' id #}
 
@@ -300,8 +331,8 @@ typedef struct _awe_rect
 {#fun unsafe awe_renderbuffer_get_buffer { id `RenderBuffer' } -> `Ptr CUChar' id #}
 -- {#fun unsafe awe_renderbuffer_copy_to { id `RenderBuffer', unsigned char* dest_buffer, `Int', `Int', `Bool', `Bool' } -> `()' #}
 -- {#fun unsafe awe_renderbuffer_copy_to_float { id `RenderBuffer', float* dest_buffer } -> `()' #}
-{#fun unsafe awe_renderbuffer_save_to_png { id `RenderBuffer', id `AweString', `Bool' } -> `Bool' #}
-{#fun unsafe awe_renderbuffer_save_to_jpeg { id `RenderBuffer', id `AweString', `Int' } -> `Bool' #}
+{#fun unsafe awe_renderbuffer_save_to_png { id `RenderBuffer', withAweString* `String', `Bool' } -> `Bool' #}
+{#fun unsafe awe_renderbuffer_save_to_jpeg { id `RenderBuffer', withAweString* `String', `Int' } -> `Bool' #}
 -- {#fun unsafe awe_renderbuffer_get_alpha_at_point { id `RenderBuffer', `Int', `Int' } -> unsigned char #}
 {#fun unsafe awe_renderbuffer_flush_alpha { id `RenderBuffer' } -> `()' #}
 
@@ -311,27 +342,27 @@ typedef struct _awe_rect
 
 -- {#fun unsafe awe_webview_set_callback_resource_request { id `WebView', awe_resource_response* (*callback } -> `()' #}
 -- {#fun unsafe awe_webview_set_callback_resource_response { id `WebView', void (*callback } -> `()' #}
--- {#fun unsafe awe_resource_response_create { size_t num_bytes, unsigned char* buffer, id `AweString' } -> `ResourceResponse' id #}
-{#fun unsafe awe_resource_response_create_from_file { id `AweString' } -> `ResourceResponse' id #}
+-- {#fun unsafe awe_resource_response_create { size_t num_bytes, unsigned char* buffer, withAweString* `String' } -> `ResourceResponse' id #}
+{#fun unsafe awe_resource_response_create_from_file { withAweString* `String' } -> `ResourceResponse' id #}
 
 {------------------------
  - Resource Request     -
  ------------------------}
 
 {#fun unsafe awe_resource_request_cancel { id `ResourceRequest' } -> `()' #}
-{#fun unsafe awe_resource_request_get_url { id `ResourceRequest' } -> `AweString' id #}
-{#fun unsafe awe_resource_request_get_method { id `ResourceRequest' } -> `AweString' id #}
-{#fun unsafe awe_resource_request_set_method { id `ResourceRequest', id `AweString' } -> `()' #}
-{#fun unsafe awe_resource_request_get_referrer { id `ResourceRequest' } -> `AweString' id #}
-{#fun unsafe awe_resource_request_set_referrer { id `ResourceRequest', id `AweString' } -> `()' #}
-{#fun unsafe awe_resource_request_get_extra_headers { id `ResourceRequest' } -> `AweString' id #}
-{#fun unsafe awe_resource_request_set_extra_headers { id `ResourceRequest', id `AweString' } -> `()' #}
-{#fun unsafe awe_resource_request_append_extra_header { id `ResourceRequest', id `AweString', id `AweString' } -> `()' #}
+{#fun unsafe awe_resource_request_get_url { id `ResourceRequest' } -> `String' fromAweStringDestroy* #}
+{#fun unsafe awe_resource_request_get_method { id `ResourceRequest' } -> `String' fromAweStringDestroy* #}
+{#fun unsafe awe_resource_request_set_method { id `ResourceRequest', withAweString* `String' } -> `()' #}
+{#fun unsafe awe_resource_request_get_referrer { id `ResourceRequest' } -> `String' fromAweStringDestroy* #}
+{#fun unsafe awe_resource_request_set_referrer { id `ResourceRequest', withAweString* `String' } -> `()' #}
+{#fun unsafe awe_resource_request_get_extra_headers { id `ResourceRequest' } -> `String' fromAweStringDestroy* #}
+{#fun unsafe awe_resource_request_set_extra_headers { id `ResourceRequest', withAweString* `String' } -> `()' #}
+{#fun unsafe awe_resource_request_append_extra_header { id `ResourceRequest', withAweString* `String', withAweString* `String' } -> `()' #}
 {#fun unsafe awe_resource_request_get_num_upload_elements { id `ResourceRequest' } -> `Int' fromIntegral #}
---{#fun unsafe awe_resource_request_get_upload_element { id `ResourceRequest', size_t idx } -> `UploadElement' id #}
+{#fun unsafe awe_resource_request_get_upload_element { id `ResourceRequest', fromIntegral `Int' } -> `UploadElement' id #}
 {#fun unsafe awe_resource_request_clear_upload_elements { id `ResourceRequest' } -> `()' #}
-{#fun unsafe awe_resource_request_append_upload_file_path { id `ResourceRequest', id `AweString' } -> `()' #}
-{#fun unsafe awe_resource_request_append_upload_bytes { id `ResourceRequest', id `AweString' } -> `()' #}
+{#fun unsafe awe_resource_request_append_upload_file_path { id `ResourceRequest', withAweString* `String' } -> `()' #}
+{#fun unsafe awe_resource_request_append_upload_bytes { id `ResourceRequest', withAweString* `String' } -> `()' #}
 
 {------------------------
  - Upload Element       -
@@ -339,8 +370,8 @@ typedef struct _awe_rect
 
 {#fun unsafe awe_upload_element_is_file_path { id `UploadElement' } -> `Bool' #}
 {#fun unsafe awe_upload_element_is_bytes { id `UploadElement' } -> `Bool' #}
-{#fun unsafe awe_upload_element_get_bytes { id `UploadElement' } -> `AweString' id #}
-{#fun unsafe awe_upload_element_get_file_path { id `UploadElement' } -> `AweString' id #}
+{#fun unsafe awe_upload_element_get_bytes { id `UploadElement' } -> `String' fromAweStringDestroy* #}
+{#fun unsafe awe_upload_element_get_file_path { id `UploadElement' } -> `String' fromAweStringDestroy* #}
 
 {------------------------
  - History Query Result -
@@ -355,8 +386,8 @@ typedef struct _awe_rect
  ------------------------}
 
 {#fun unsafe awe_history_entry_destroy { id `HistoryEntry' } -> `()' #}
-{#fun unsafe awe_history_entry_get_url { id `HistoryEntry' } -> `AweString' id #}
-{#fun unsafe awe_history_entry_get_title { id `HistoryEntry' } -> `AweString' id #}
+{#fun unsafe awe_history_entry_get_url { id `HistoryEntry' } -> `String' fromAweStringDestroy* #}
+{#fun unsafe awe_history_entry_get_title { id `HistoryEntry' } -> `String' fromAweStringDestroy* #}
 {#fun unsafe awe_history_entry_get_visit_time { id `HistoryEntry' } -> `Double' #}
 {#fun unsafe awe_history_entry_get_visit_count { id `HistoryEntry' } -> `Int' #}
 
