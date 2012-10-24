@@ -255,39 +255,111 @@ withAweString str f = do
 {#fun webview_login as ^ { id `WebView', `Int', withAweString* `String', withAweString* `String' } -> `()' #}
 {#fun webview_cancel_login as ^ { id `WebView', `Int' } -> `()' #}
 {#fun webview_close_javascript_dialog as ^ { id `WebView', `Int', `Bool', withAweString* `String' } -> `()' #}
-{-
-{#fun webview_set_callback_begin_navigation as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_begin_loading as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_finish_loading as ^ { id `WebView', void (*callback } -> `()' #}
--}
+
+-- TODO: Make callbacks with haskell types.
+type BeginNavigationCallback = WebView -> AweString -> AweString -> IO()
+foreign import ccall "wrapper" mkBeginNavigationCallback :: BeginNavigationCallback -> IO (FunPtr BeginNavigationCallback)
+{#fun webview_set_callback_begin_navigation as ^ { id `WebView', id `FunPtr BeginNavigationCallback' } -> `()' #}
+
+type BeginLoadingCallback = WebView -> AweString -> AweString -> CInt -> AweString -> IO()
+foreign import ccall "wrapper" mkBeginLoadingCallback :: BeginLoadingCallback -> IO (FunPtr BeginLoadingCallback)
+{#fun webview_set_callback_begin_loading as ^ { id `WebView', id `FunPtr BeginLoadingCallback' } -> `()' #}
+
+type FinishLoadingCallback = WebView -> IO()
+foreign import ccall "wrapper" mkFinishLoadingCallback :: FinishLoadingCallback -> IO (FunPtr FinishLoadingCallback)
+{#fun webview_set_callback_finish_loading as ^ { id `WebView', id `FunPtr FinishLoadingCallback' } -> `()' #}
+
 type JSCallback = WebView -> AweString -> AweString -> JSArray -> IO()
-foreign import ccall "wrapper"
-    mkCallback :: JSCallback -> IO (FunPtr JSCallback)
+foreign import ccall "wrapper" mkJSCallback :: JSCallback -> IO (FunPtr JSCallback)
 {#fun webview_set_callback_js_callback as ^ { id `WebView', id `FunPtr JSCallback' } -> `()' #}
-{-
-{#fun webview_set_callback_receive_title as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_change_tooltip as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_change_cursor as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_change_keyboard_focus as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_change_target_url as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_open_external_link as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_request_download as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_web_view_crashed as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_plugin_crashed as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_request_move as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_get_page_contents as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_dom_ready as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_request_file_chooser as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_get_scroll_data as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_js_console_message as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_get_find_results as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_update_ime as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_show_context_menu as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_request_login as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_change_history as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_finish_resize as ^ { id `WebView', void (*callback } -> `()' #}
-{#fun webview_set_callback_show_javascript_dialog as ^ { id `WebView', void (*callback } -> `()' #}
--}
+
+type ReciveTitleCallback = WebView -> AweString -> AweString -> IO()
+foreign import ccall "wrapper" mkReciveTitleCallback :: ReciveTitleCallback -> IO (FunPtr ReciveTitleCallback)
+{#fun webview_set_callback_receive_title as ^ { id `WebView', id `FunPtr ReciveTitleCallback' } -> `()' #}
+
+type ChangeTooltipCallback = WebView -> AweString -> IO()
+foreign import ccall "wrapper" mkChangeTooltipCallback :: ChangeTooltipCallback -> IO (FunPtr ChangeTooltipCallback)
+{#fun webview_set_callback_change_tooltip as ^ { id `WebView', id `FunPtr ChangeTooltipCallback' } -> `()' #}
+
+type ChangeCursorCallback = WebView -> CInt {-CursorType-} -> IO()
+foreign import ccall "wrapper" mkChangeCursorCallback :: ChangeCursorCallback -> IO (FunPtr ChangeCursorCallback)
+{#fun webview_set_callback_change_cursor as ^ { id `WebView', id `FunPtr ChangeCursorCallback' } -> `()' #}
+
+type ChangeKeyboardFocusCallback = WebView -> CUInt {-Bool-} -> IO()
+foreign import ccall "wrapper" mkChangeKeyboardFocusCallback :: ChangeKeyboardFocusCallback -> IO (FunPtr ChangeKeyboardFocusCallback)
+{#fun webview_set_callback_change_keyboard_focus as ^ { id `WebView', id `FunPtr ChangeKeyboardFocusCallback' } -> `()' #}
+
+type ChangeTargetUrlCallback = WebView -> AweString -> IO()
+foreign import ccall "wrapper" mkChangeTargetUrlCallback :: ChangeTargetUrlCallback -> IO (FunPtr ChangeTargetUrlCallback)
+{#fun webview_set_callback_change_target_url as ^ { id `WebView', id `FunPtr ChangeTargetUrlCallback' } -> `()' #}
+
+type OpenExternalLinkCallback = WebView -> AweString -> AweString -> IO()
+foreign import ccall "wrapper" mkOpenExternalLinkCallback :: OpenExternalLinkCallback -> IO (FunPtr OpenExternalLinkCallback)
+{#fun webview_set_callback_open_external_link as ^ { id `WebView', id `FunPtr OpenExternalLinkCallback' } -> `()' #}
+
+type RequestDownloadCallback = WebView -> AweString -> IO()
+foreign import ccall "wrapper" mkRequestDownloadCallback :: RequestDownloadCallback -> IO (FunPtr RequestDownloadCallback)
+{#fun webview_set_callback_request_download as ^ { id `WebView', id `FunPtr RequestDownloadCallback' } -> `()' #}
+
+type WebViewCrashedCallback = WebView -> IO()
+foreign import ccall "wrapper" mkWebViewCrashedCallback :: WebViewCrashedCallback -> IO (FunPtr WebViewCrashedCallback)
+{#fun webview_set_callback_web_view_crashed as ^ { id `WebView', id `FunPtr WebViewCrashedCallback' } -> `()' #}
+
+type PluginCrashedCallback = WebView -> AweString -> IO()
+foreign import ccall "wrapper" mkPluginCrashedCallback :: PluginCrashedCallback -> IO (FunPtr PluginCrashedCallback)
+{#fun webview_set_callback_plugin_crashed as ^ { id `WebView', id `FunPtr PluginCrashedCallback' } -> `()' #}
+
+type RequestMoveCallback = WebView -> CInt -> CInt -> IO()
+foreign import ccall "wrapper" mkRequestMoveCallback :: RequestMoveCallback -> IO (FunPtr RequestMoveCallback)
+{#fun webview_set_callback_request_move as ^ { id `WebView', id `FunPtr RequestMoveCallback' } -> `()' #}
+
+type GetPageContentsCallback = WebView -> AweString -> AweString -> IO()
+foreign import ccall "wrapper" mkGetPageContentsCallback :: GetPageContentsCallback -> IO (FunPtr GetPageContentsCallback)
+{#fun webview_set_callback_get_page_contents as ^ { id `WebView', id `FunPtr GetPageContentsCallback' } -> `()' #}
+
+type DomReadyCallback = WebView -> IO()
+foreign import ccall "wrapper" mkDomReadyCallback :: DomReadyCallback -> IO (FunPtr DomReadyCallback)
+{#fun webview_set_callback_dom_ready as ^ { id `WebView', id `FunPtr DomReadyCallback' } -> `()' #}
+
+type RequestFileChooserCallback = WebView -> CUInt {-Bool-} -> AweString -> AweString -> IO()
+foreign import ccall "wrapper" mkRequestFileChooserCallback :: RequestFileChooserCallback -> IO (FunPtr RequestFileChooserCallback)
+{#fun webview_set_callback_request_file_chooser as ^ { id `WebView', id `FunPtr RequestFileChooserCallback' } -> `()' #}
+
+type GetScrollDataCallback = WebView -> CInt -> CInt -> CInt -> CInt -> CInt -> IO()
+foreign import ccall "wrapper" mkGetScrollDataCallback :: GetScrollDataCallback -> IO (FunPtr GetScrollDataCallback)
+{#fun webview_set_callback_get_scroll_data as ^ { id `WebView', id `FunPtr GetScrollDataCallback' } -> `()' #}
+
+type JsConsoleMessageCallback = WebView -> AweString -> CInt -> AweString -> IO()
+foreign import ccall "wrapper" mkJsConsoleMessageCallback :: JsConsoleMessageCallback -> IO (FunPtr JsConsoleMessageCallback)
+{#fun webview_set_callback_js_console_message as ^ { id `WebView', id `FunPtr JsConsoleMessageCallback' } -> `()' #}
+
+-- type GetFindResultsCallback = WebView -> CInt -> CInt -> Rect -> CInt -> CUInt {-Bool-} -> IO()
+-- foreign import ccall "wrapper" mkGetFindResultsCallback :: GetFindResultsCallback -> IO (FunPtr GetFindResultsCallback)
+-- {#fun webview_set_callback_get_find_results as ^ { id `WebView', id `FunPtr GetFindResultsCallback' } -> `()' #}
+
+-- type UpdateImeCallback = WebView -> ImeState -> Rect -> IO()
+-- foreign import ccall "wrapper" mkUpdateImeCallback :: UpdateImeCallback -> IO (FunPtr UpdateImeCallback)
+-- {#fun webview_set_callback_update_ime as ^ { id `WebView', id `FunPtr UpdateImeCallback' } -> `()' #}
+
+type ShowContextMenuCallback = WebView -> CInt -> CInt -> CInt {-MediaType-} -> CInt -> AweString -> AweString -> AweString -> AweString -> AweString -> CUInt {-Bool-} -> CInt -> IO()
+foreign import ccall "wrapper" mkShowContextMenuCallback :: ShowContextMenuCallback -> IO (FunPtr ShowContextMenuCallback)
+{#fun webview_set_callback_show_context_menu as ^ { id `WebView', id `FunPtr ShowContextMenuCallback' } -> `()' #}
+
+type RequestLoginCallback = WebView -> CInt -> AweString -> CUInt {-Bool-} -> AweString -> AweString -> AweString -> IO()
+foreign import ccall "wrapper" mkRequestLoginCallback :: RequestLoginCallback -> IO (FunPtr RequestLoginCallback)
+{#fun webview_set_callback_request_login as ^ { id `WebView', id `FunPtr RequestLoginCallback' } -> `()' #}
+
+type ChangeHistoryCallback = WebView -> CInt -> CInt -> IO()
+foreign import ccall "wrapper" mkChangeHistoryCallback :: ChangeHistoryCallback -> IO (FunPtr ChangeHistoryCallback)
+{#fun webview_set_callback_change_history as ^ { id `WebView', id `FunPtr ChangeHistoryCallback' } -> `()' #}
+
+type FinishResizeCallback = WebView -> CInt -> CInt -> IO()
+foreign import ccall "wrapper" mkFinishResizeCallback :: FinishResizeCallback -> IO (FunPtr FinishResizeCallback)
+{#fun webview_set_callback_finish_resize as ^ { id `WebView', id `FunPtr FinishResizeCallback' } -> `()' #}
+
+type ShowJavascriptDialogCallback = WebView -> CInt -> CInt -> AweString -> AweString -> AweString -> IO()
+foreign import ccall "wrapper" mkShowJavascriptDialogCallback :: ShowJavascriptDialogCallback -> IO (FunPtr ShowJavascriptDialogCallback)
+{#fun webview_set_callback_show_javascript_dialog as ^ { id `WebView', id `FunPtr ShowJavascriptDialogCallback' } -> `()' #}
 
 {-----------------------
  - JS Value Functions  -
@@ -339,7 +411,7 @@ foreign import ccall "wrapper"
 -- {#fun renderbuffer_copy_to_float as ^ { id `RenderBuffer', float* dest_buffer } -> `()' #}
 {#fun renderbuffer_save_to_png as ^ { id `RenderBuffer', withAweString* `String', `Bool' } -> `Bool' #}
 {#fun renderbuffer_save_to_jpeg as ^ { id `RenderBuffer', withAweString* `String', `Int' } -> `Bool' #}
--- {#fun renderbuffer_get_alpha_at_point as ^ { id `RenderBuffer', `Int', `Int' } -> unsigned char #}
+{#fun renderbuffer_get_alpha_at_point as ^ { id `RenderBuffer', `Int', `Int' } -> `Int' #}
 {#fun renderbuffer_flush_alpha as ^ { id `RenderBuffer' } -> `()' #}
 
 {------------------------

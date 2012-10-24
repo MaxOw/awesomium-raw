@@ -4,7 +4,7 @@ module Graphics.UI.Awesomium
     , Config (..)
     , defaultConfig
     , initialize
-    , ApiHandler
+    , JSCallbackHandler
     , registerApiHandler
 )where
 
@@ -71,18 +71,19 @@ initialize c@(Config a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12
     | otherwise = webcoreInitialize a1 a2 a3 a4 a5 a6 a7 a8 a9
         a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23
 
-type ApiHandler = String -> String -> JSArray -> IO ()
-defCallback :: (ApiHandler) -> JSCallback
-defCallback convcb wv ao afn arr = do
+type JSCallbackHandler = String -> String -> JSArray -> IO ()
+defJSCallback :: (JSCallbackHandler) -> JSCallback
+defJSCallback convcb wv ao afn arr = do
     o <- fromAweString ao
     fn <- fromAweString afn
     convcb o fn arr
 
 -- | Creates API Handler for JS Callbacks. Returned FunPtr nedds to be
 -- disposed with freeHaskellFunPtr when it's no longer needed
-registerApiHandler :: WebView -> ApiHandler -> IO (FunPtr JSCallback)
+registerApiHandler :: WebView -> JSCallbackHandler
+                   -> IO (FunPtr JSCallback)
 registerApiHandler wv ah = do
-    fp <- mkCallback (defCallback ah)
+    fp <- mkJSCallback (defJSCallback ah)
     webviewSetCallbackJsCallback wv fp
     return fp
 
