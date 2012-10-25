@@ -53,7 +53,7 @@ data DHistoryQueryResult
 data DHistoryEntry 
 {#pointer *history_entry as HistoryEntry -> DHistoryEntry #}
 
-{#enum loglevel as LogLevel {underscoreToCase} deriving (Show, Read, Eq)#}
+{#enum loglevel as LogLevel {underscoreToCase}  with prefix = "AWE_LL_" deriving (Show, Read, Eq)#}
 {#enum mousebutton as MouseButton {underscoreToCase}#}
 {#enum url_filtering_mode as UrlFilteringMode {underscoreToCase}#}
 {#enum webkey_type as WebkeyType {underscoreToCase}#}
@@ -61,31 +61,11 @@ data DHistoryEntry
 {#enum cursor_type as CursorType {underscoreToCase}#}
 {#enum ime_state as ImeState {underscoreToCase}#}
 {#enum media_type as MediaType {underscoreToCase}#}
+{#enum _awe_media_state as MediaState {underscoreToCase} with prefix = "AWE_" #}
+{#enum _awe_can_edit_flags as CanEditFlags {underscoreToCase} with prefix = "AWE_" #}
+{#enum _awe_dialog_flags as DialogFlags {underscoreToCase} with prefix = "AWE_" #}
 
 {- TODO
-typedef enum _awe_media_state
-{
-    AWE_MEDIA_STATE_NONE = 0x0,
-    AWE_MEDIA_STATE_ERROR = 0x1,
-    AWE_MEDIA_STATE_PAUSED = 0x2,
-    AWE_MEDIA_STATE_MUTED = 0x4,
-    AWE_MEDIA_STATE_LOOP = 0x8,
-    AWE_MEDIA_STATE_CAN_SAVE = 0x10,
-    AWE_MEDIA_STATE_HAS_AUDIO = 0x20
-};
-
-enum _awe_can_edit_flags
-{
-    AWE_CAN_EDIT_NOTHING = 0x0,
-    AWE_CAN_UNDO = 0x1,
-    AWE_CAN_REDO = 0x2,
-    AWE_CAN_CUT = 0x4,
-    AWE_CAN_COPY = 0x8,
-    AWE_CAN_PASTE = 0x10,
-    AWE_CAN_DELETE = 0x20,
-    AWE_CAN_SELECT_ALL = 0x40
-};
-
 enum _awe_dialog_flags
 {
     AWE_DIALOG_HAS_OK_BUTTON = 0x1,

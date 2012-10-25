@@ -48,7 +48,7 @@ defaultConfig = Config
     , userDataPath              = ""
     , pluginPath                = ""
     , logPath                   = ""
-    , logLevel                  = LlNormal
+    , logLevel                  = Normal
     , singleProcess             = False
     , childProcessPath          = ""
     , autoDetectEncodingEnabled = True
@@ -86,4 +86,6 @@ registerApiHandler wv ah = do
     fp <- mkJSCallback (defJSCallback ah)
     awe_webview_set_callback_js_callback wv fp
     return fp
+
+
 
