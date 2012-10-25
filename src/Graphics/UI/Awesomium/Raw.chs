@@ -6,6 +6,7 @@ import Foreign.C.String
 import Foreign.Marshal
 import Foreign.Ptr
 import Foreign.Storable
+import Control.Exception (bracket)
 import C2HS
 
 {#context prefix = "awe"#}
@@ -23,34 +24,34 @@ data DWebView
 data DJSValue
 {#pointer *jsvalue as JSValue -> DJSValue #}
 -- | JSArray instance
-data DJSArray 
+data DJSArray
 {#pointer *jsarray as JSArray -> DJSArray #}
 -- | JSObject instance
-data DJSObject 
+data DJSObject
 {#pointer *jsobject as JSObject -> DJSObject #}
 -- | RenderBuffer instance, owned by the WebView
-data DRenderBuffer 
+data DRenderBuffer
 {#pointer *renderbuffer as RenderBuffer -> DRenderBuffer #}
 -- | HeaderDefinition instance
-data DHeaderDefinition 
+data DHeaderDefinition
 {#pointer *header_definition as HeaderDefinition -> DHeaderDefinition #}
 -- | ResourceResponse instance
-data DResourceResponse 
+data DResourceResponse
 {#pointer *resource_response as ResourceResponse -> DResourceResponse #}
 -- | ResourceRequest instance
-data DResourceRequest 
+data DResourceRequest
 {#pointer *resource_request as ResourceRequest -> DResourceRequest #}
 -- | UploadElement instance
-data DUploadElement 
+data DUploadElement
 {#pointer *upload_element as UploadElement -> DUploadElement #}
 -- | String instance
 data DAweString
 {#pointer *awe_string as AweString -> DAweString #}
 -- | HistoryQueryResult instance
-data DHistoryQueryResult 
+data DHistoryQueryResult
 {#pointer *history_query_result as HistoryQueryResult -> DHistoryQueryResult #}
 -- | HistoryEntry instance
-data DHistoryEntry 
+data DHistoryEntry
 {#pointer *history_entry as HistoryEntry -> DHistoryEntry #}
 
 {#enum loglevel as LogLevel {underscoreToCase}  with prefix = "AWE_LL_" deriving (Show, Read, Eq)#}
@@ -66,14 +67,6 @@ data DHistoryEntry
 {#enum _awe_dialog_flags as DialogFlags {underscoreToCase} with prefix = "AWE_" #}
 
 {- TODO
-enum _awe_dialog_flags
-{
-    AWE_DIALOG_HAS_OK_BUTTON = 0x1,
-    AWE_DIALOG_HAS_CANCEL_BUTTON = 0x2,
-    AWE_DIALOG_HAS_PROMPT_FIELD = 0x4,
-    AWE_DIALOG_HAS_MESSAGE = 0x8
-};
-
 typedef struct _awe_webkeyboardevent
 {
     awe_webkey_type type;
@@ -104,7 +97,7 @@ typedef struct _awe_rect
  -----------------------}
 
 {#fun awe_string_empty { } -> `AweString' id #}
--- {#fun awe_string_create_from_ascii { `String'& } -> `AweString' id #}
+-- {#fun awe_string_create_orom_ascii { `String'& } -> `AweString' id #}
 -- {#fun awe_string_create_from_wide { `String'& } -> `AweString' id #}
 {#fun awe_string_create_from_utf8 { `String'& } -> `AweString' id #}
 -- {#fun awe_string_create_from_utf16 { `String'& } -> `AweString' id #}
@@ -124,9 +117,11 @@ awe_string_to_utf8 a1 = do
         awe_string_to_utf8'_ a1 buf (cIntConv len)
         peekCStringLen (buf, (cIntConv len))
 
+-- | Use with c functions that return const awe_string*
 fromAweString :: AweString -> IO (String)
 fromAweString = awe_string_to_utf8
 
+-- | Use with c functions that return awe_string* that should be destroyed afterwards.
 fromAweStringDestroy :: AweString -> IO (String)
 fromAweStringDestroy as = do
     res <- awe_string_to_utf8 as
@@ -134,12 +129,8 @@ fromAweStringDestroy as = do
     return res
 
 withAweString :: String -> (AweString -> IO b) -> IO b
-withAweString str f = do
-    -- bracket (awe_string_create_from_utf8 str) awe_string_destroy f
-    as <- awe_string_create_from_utf8 str
-    res <- f as
-    awe_string_destroy as
-    return res
+withAweString str =
+    bracket (awe_string_create_from_utf8 str) awe_string_destroy
 
 {-----------------------
  - Web Core Functions  -
@@ -152,12 +143,12 @@ withAweString str f = do
 {#fun awe_webcore_create_webview { `Int', `Int', `Bool' } -> `WebView' id #}
 {#fun awe_webcore_set_custom_response_page { `Int', withAweString* `String' } -> `()' #}
 {#fun awe_webcore_update { } -> `()' #}
-{#fun awe_webcore_get_base_directory { } -> `AweString' id #}
+{#fun awe_webcore_get_base_directory { } -> `String' fromAweString* #}
 {#fun awe_webcore_are_plugins_enabled { } -> `Bool' #}
 {#fun awe_webcore_clear_cache { } -> `()' #}
 {#fun awe_webcore_clear_cookies { } -> `()' #}
 {#fun awe_webcore_set_cookie { withAweString* `String', withAweString* `String', `Bool', `Bool' } -> `()' #}
-{#fun awe_webcore_get_cookies { withAweString* `String', `Bool' } -> `AweString' id #}
+{#fun awe_webcore_get_cookies { withAweString* `String', `Bool' } -> `String' fromAweString* #}
 {#fun awe_webcore_delete_cookie { withAweString* `String', withAweString* `String' } -> `()' #}
 {#fun awe_webcore_set_suppress_printer_dialog { `Bool' } -> `()' #}
 {#fun awe_webcore_query_history { withAweString* `String', `Int', `Int' } -> `HistoryQueryResult' id #}
@@ -345,7 +336,15 @@ foreign import ccall "wrapper" mkShowJavascriptDialogCallback :: ShowJavascriptD
  - JS Value Functions  -
  -----------------------}
 
-{#enum jsvalue_type as JSValueType {underscoreToCase}#}
+data JSValueType
+   = JSValueTypeNull
+   | JSValueTypeBoolean
+   | JSValueTypeInteger
+   | JSValueTypeDouble
+   | JSValueTypeString
+   | JSValueTypeObject
+   | JSValueTypeArray
+   deriving (Eq, Enum)
 
 {#fun awe_jsvalue_create_null_value { } -> `JSValue' id #}
 {#fun awe_jsvalue_create_bool_value { `Bool' } -> `JSValue' id #}

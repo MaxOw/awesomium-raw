@@ -1,18 +1,17 @@
 
 name:                awesomium-raw
 version:             0.1.0.0
-synopsis:            FFI to Awesomium.
+synopsis:            Low-level Awesomium bindings.
 license:             LGPL-3
 license-file:        LICENSE
 author:              Maksymilian Owsianny
-maintainer:          Maksymilian.Owsianny@gmail.com
+maintainer:          Maksymilian.Owsianny+AwesomiumRaw@gmail.com
 category:            Graphics
 build-type:          Simple
 cabal-version:       >=1.8
 
 library
   exposed-modules:  Graphics.UI.Awesomium.Raw
-                 ,  Graphics.UI.Awesomium
   other-modules:    C2HS
   build-tools:      c2hs
   build-depends:    base ==4.5.*
