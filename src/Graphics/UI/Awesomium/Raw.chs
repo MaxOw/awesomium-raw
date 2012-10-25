@@ -111,11 +111,11 @@ typedef struct _awe_rect
 } awe_rect;
 
 #ifdef _WIN32
-{#fun is_child_process { HINSTANCE hInstance } -> `Bool' #}
-{#fun child_process_main { HINSTANCE hInstance } -> `Int' #}
+{#fun awe_is_child_process { HINSTANCE hInstance } -> `Bool' #}
+{#fun awe_child_process_main { HINSTANCE hInstance } -> `Int' #}
 #else
-{#fun is_child_process { `Int', char** argv } -> `Bool' #}
-{#fun child_process_main { `Int', char** argv } -> `Int' #}
+{#fun awe_is_child_process { `Int', char** argv } -> `Bool' #}
+{#fun awe_child_process_main { `Int', char** argv } -> `Int' #}
 #endif
 -}
 
@@ -165,201 +165,201 @@ withAweString str f = do
  - Web Core Functions  -
  -----------------------}
 
-{#fun webcore_initialize as ^ { `Bool', `Bool', `Bool', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String', cFromEnum `LogLevel', `Bool', withAweString* `String', `Bool', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String', `Bool', `Int', `Bool', `Bool', withAweString* `String' } -> `()' #}
-{#fun webcore_initialize_default as ^ { } -> `()' #}
-{#fun webcore_shutdown as ^ { } -> `()' #}
-{#fun webcore_set_base_directory as ^ { withAweString* `String' } -> `()' #}
-{#fun webcore_create_webview as ^ { `Int', `Int', `Bool' } -> `WebView' id #}
-{#fun webcore_set_custom_response_page as ^ { `Int', withAweString* `String' } -> `()' #}
-{#fun webcore_update as ^ { } -> `()' #}
-{#fun webcore_get_base_directory as ^ { } -> `AweString' id #}
-{#fun webcore_are_plugins_enabled as ^ { } -> `Bool' #}
-{#fun webcore_clear_cache as ^ { } -> `()' #}
-{#fun webcore_clear_cookies as ^ { } -> `()' #}
-{#fun webcore_set_cookie as ^ { withAweString* `String', withAweString* `String', `Bool', `Bool' } -> `()' #}
-{#fun webcore_get_cookies as ^ { withAweString* `String', `Bool' } -> `AweString' id #}
-{#fun webcore_delete_cookie as ^ { withAweString* `String', withAweString* `String' } -> `()' #}
-{#fun webcore_set_suppress_printer_dialog as ^ { `Bool' } -> `()' #}
-{#fun webcore_query_history as ^ { withAweString* `String', `Int', `Int' } -> `HistoryQueryResult' id #}
+{#fun awe_webcore_initialize { `Bool', `Bool', `Bool', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String', cFromEnum `LogLevel', `Bool', withAweString* `String', `Bool', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String', `Bool', `Int', `Bool', `Bool', withAweString* `String' } -> `()' #}
+{#fun awe_webcore_initialize_default { } -> `()' #}
+{#fun awe_webcore_shutdown { } -> `()' #}
+{#fun awe_webcore_set_base_directory { withAweString* `String' } -> `()' #}
+{#fun awe_webcore_create_webview { `Int', `Int', `Bool' } -> `WebView' id #}
+{#fun awe_webcore_set_custom_response_page { `Int', withAweString* `String' } -> `()' #}
+{#fun awe_webcore_update { } -> `()' #}
+{#fun awe_webcore_get_base_directory { } -> `AweString' id #}
+{#fun awe_webcore_are_plugins_enabled { } -> `Bool' #}
+{#fun awe_webcore_clear_cache { } -> `()' #}
+{#fun awe_webcore_clear_cookies { } -> `()' #}
+{#fun awe_webcore_set_cookie { withAweString* `String', withAweString* `String', `Bool', `Bool' } -> `()' #}
+{#fun awe_webcore_get_cookies { withAweString* `String', `Bool' } -> `AweString' id #}
+{#fun awe_webcore_delete_cookie { withAweString* `String', withAweString* `String' } -> `()' #}
+{#fun awe_webcore_set_suppress_printer_dialog { `Bool' } -> `()' #}
+{#fun awe_webcore_query_history { withAweString* `String', `Int', `Int' } -> `HistoryQueryResult' id #}
 
 {-----------------------
  - Web View Functions  -
  -----------------------}
 
-{#fun webview_destroy as ^ { id `WebView' } -> `()' #}
-{#fun webview_load_url as ^ { id `WebView', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String' } -> `()' #}
-{#fun webview_load_html as ^ { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
-{#fun webview_load_file as ^ { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
-{#fun webview_get_url as ^ { id `WebView' } -> `String' fromAweStringDestroy* #}
-{#fun webview_go_to_history_offset as ^ { id `WebView', `Int' } -> `()' #}
-{#fun webview_get_history_back_count as ^ { id `WebView' } -> `Int' #}
-{#fun webview_get_history_forward_count as ^ { id `WebView' } -> `Int' #}
-{#fun webview_stop as ^ { id `WebView' } -> `()' #}
-{#fun webview_reload as ^ { id `WebView' } -> `()' #}
-{#fun webview_execute_javascript as ^ { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
-{#fun webview_execute_javascript_with_result as ^ { id `WebView', withAweString* `String', withAweString* `String', `Int' } -> `JSValue' id #}
-{#fun webview_call_javascript_function as ^ { id `WebView', withAweString* `String', withAweString* `String', id `JSArray', withAweString* `String' } -> `()' #}
-{#fun webview_create_object as ^ { id `WebView', withAweString* `String' } -> `()' #}
-{#fun webview_destroy_object as ^ { id `WebView', withAweString* `String' } -> `()' #}
-{#fun webview_set_object_property as ^ { id `WebView', withAweString* `String', withAweString* `String', id `JSValue' } -> `()' #}
-{#fun webview_set_object_callback as ^ { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
-{#fun webview_is_loading_page as ^ { id `WebView' } -> `Bool' #}
-{#fun webview_is_dirty as ^ { id `WebView' } -> `Bool' #}
--- {#fun webview_get_dirty_bounds as ^ { id `WebView' } -> rect #}
-{#fun webview_render as ^ { id `WebView' } -> `RenderBuffer' id #}
-{#fun webview_pause_rendering as ^ { id `WebView' } -> `()' #}
-{#fun webview_resume_rendering as ^ { id `WebView' } -> `()' #}
-{#fun webview_inject_mouse_move as ^ { id `WebView', `Int', `Int' } -> `()' #}
-{#fun webview_inject_mouse_down as ^ { id `WebView', cFromEnum `MouseButton' } -> `()' #}
-{#fun webview_inject_mouse_up as ^ { id `WebView', cFromEnum `MouseButton' } -> `()' #}
-{#fun webview_inject_mouse_wheel as ^ { id `WebView', `Int', `Int' } -> `()' #}
--- {#fun webview_inject_keyboard_event as ^ { id `WebView', webkeyboardevent key_event } -> `()' #}
+{#fun awe_webview_destroy { id `WebView' } -> `()' #}
+{#fun awe_webview_load_url { id `WebView', withAweString* `String', withAweString* `String', withAweString* `String', withAweString* `String' } -> `()' #}
+{#fun awe_webview_load_html { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
+{#fun awe_webview_load_file { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
+{#fun awe_webview_get_url { id `WebView' } -> `String' fromAweStringDestroy* #}
+{#fun awe_webview_go_to_history_offset { id `WebView', `Int' } -> `()' #}
+{#fun awe_webview_get_history_back_count { id `WebView' } -> `Int' #}
+{#fun awe_webview_get_history_forward_count { id `WebView' } -> `Int' #}
+{#fun awe_webview_stop { id `WebView' } -> `()' #}
+{#fun awe_webview_reload { id `WebView' } -> `()' #}
+{#fun awe_webview_execute_javascript { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
+{#fun awe_webview_execute_javascript_with_result { id `WebView', withAweString* `String', withAweString* `String', `Int' } -> `JSValue' id #}
+{#fun awe_webview_call_javascript_function { id `WebView', withAweString* `String', withAweString* `String', id `JSArray', withAweString* `String' } -> `()' #}
+{#fun awe_webview_create_object { id `WebView', withAweString* `String' } -> `()' #}
+{#fun awe_webview_destroy_object { id `WebView', withAweString* `String' } -> `()' #}
+{#fun awe_webview_set_object_property { id `WebView', withAweString* `String', withAweString* `String', id `JSValue' } -> `()' #}
+{#fun awe_webview_set_object_callback { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
+{#fun awe_webview_is_loading_page { id `WebView' } -> `Bool' #}
+{#fun awe_webview_is_dirty { id `WebView' } -> `Bool' #}
+-- {#fun awe_webview_get_dirty_bounds { id `WebView' } -> rect #}
+{#fun awe_webview_render { id `WebView' } -> `RenderBuffer' id #}
+{#fun awe_webview_pause_rendering { id `WebView' } -> `()' #}
+{#fun awe_webview_resume_rendering { id `WebView' } -> `()' #}
+{#fun awe_webview_inject_mouse_move { id `WebView', `Int', `Int' } -> `()' #}
+{#fun awe_webview_inject_mouse_down { id `WebView', cFromEnum `MouseButton' } -> `()' #}
+{#fun awe_webview_inject_mouse_up { id `WebView', cFromEnum `MouseButton' } -> `()' #}
+{#fun awe_webview_inject_mouse_wheel { id `WebView', `Int', `Int' } -> `()' #}
+-- {#fun awe_webview_inject_keyboard_event { id `WebView', webkeyboardevent key_event } -> `()' #}
 
 #ifdef _WIN32
--- {#fun webview_inject_keyboard_event_win as ^ { id `WebView', UINT msg, WPARAM wparam, LPARAM lparam } -> `()' #}
+-- {#fun awe_webview_inject_keyboard_event_win { id `WebView', UINT msg, WPARAM wparam, LPARAM lparam } -> `()' #}
 #endif
 
-{#fun webview_cut as ^ { id `WebView' } -> `()' #}
-{#fun webview_copy as ^ { id `WebView' } -> `()' #}
-{#fun webview_paste as ^ { id `WebView' } -> `()' #}
-{#fun webview_select_all as ^ { id `WebView' } -> `()' #}
-{#fun webview_copy_image_at as ^ { id `WebView', `Int', `Int' } -> `()' #}
-{#fun webview_set_zoom as ^ { id `WebView', `Int' } -> `()' #}
-{#fun webview_reset_zoom as ^ { id `WebView' } -> `()' #}
-{#fun webview_get_zoom as ^ { id `WebView' } -> `Int' #}
-{#fun webview_get_zoom_for_host as ^ { id `WebView', withAweString* `String' } -> `Int' #}
-{#fun webview_resize as ^ { id `WebView', `Int', `Int', `Bool', `Int' } -> `Bool' #}
-{#fun webview_is_resizing as ^ { id `WebView' } -> `Bool' #}
-{#fun webview_unfocus as ^ { id `WebView' } -> `()' #}
-{#fun webview_focus as ^ { id `WebView' } -> `()' #}
-{#fun webview_set_transparent as ^ { id `WebView', `Bool' } -> `()' #}
-{#fun webview_is_transparent as ^ { id `WebView' } -> `Bool' #}
-{#fun webview_set_url_filtering_mode as ^ { id `WebView', cFromEnum `UrlFilteringMode' } -> `()' #}
-{#fun webview_add_url_filter as ^ { id `WebView', withAweString* `String' } -> `()' #}
-{#fun webview_clear_all_url_filters as ^ { id `WebView' } -> `()' #}
+{#fun awe_webview_cut { id `WebView' } -> `()' #}
+{#fun awe_webview_copy { id `WebView' } -> `()' #}
+{#fun awe_webview_paste { id `WebView' } -> `()' #}
+{#fun awe_webview_select_all { id `WebView' } -> `()' #}
+{#fun awe_webview_copy_image_at { id `WebView', `Int', `Int' } -> `()' #}
+{#fun awe_webview_set_zoom { id `WebView', `Int' } -> `()' #}
+{#fun awe_webview_reset_zoom { id `WebView' } -> `()' #}
+{#fun awe_webview_get_zoom { id `WebView' } -> `Int' #}
+{#fun awe_webview_get_zoom_for_host { id `WebView', withAweString* `String' } -> `Int' #}
+{#fun awe_webview_resize { id `WebView', `Int', `Int', `Bool', `Int' } -> `Bool' #}
+{#fun awe_webview_is_resizing { id `WebView' } -> `Bool' #}
+{#fun awe_webview_unfocus { id `WebView' } -> `()' #}
+{#fun awe_webview_focus { id `WebView' } -> `()' #}
+{#fun awe_webview_set_transparent { id `WebView', `Bool' } -> `()' #}
+{#fun awe_webview_is_transparent { id `WebView' } -> `Bool' #}
+{#fun awe_webview_set_url_filtering_mode { id `WebView', cFromEnum `UrlFilteringMode' } -> `()' #}
+{#fun awe_webview_add_url_filter { id `WebView', withAweString* `String' } -> `()' #}
+{#fun awe_webview_clear_all_url_filters { id `WebView' } -> `()' #}
 -- TODO: webview_set_header_definition :: WebView -> String -> [(String, String)] -> IO ()
--- {#fun webview_set_header_definition as ^ { id `WebView', withAweString* `String', fromIntegral `Int' , id `Ptr AweString', id `Ptr AweString' } -> `()' #}
-{#fun webview_add_header_rewrite_rule as ^ { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
-{#fun webview_remove_header_rewrite_rule as ^ { id `WebView', withAweString* `String' } -> `()' #}
-{#fun webview_remove_header_rewrite_rules_by_definition_name as ^ { id `WebView', withAweString* `String' } -> `()' #}
-{#fun webview_choose_file as ^ { id `WebView', withAweString* `String' } -> `()' #}
-{#fun webview_print as ^ { id `WebView' } -> `()' #}
-{#fun webview_request_scroll_data as ^ { id `WebView', withAweString* `String' } -> `()' #}
-{#fun webview_find as ^ { id `WebView', `Int', withAweString* `String', `Bool', `Bool', `Bool' } -> `()' #}
-{#fun webview_stop_find as ^ { id `WebView', `Bool' } -> `()' #}
-{#fun webview_translate_page as ^ { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
-{#fun webview_activate_ime as ^ { id `WebView', `Bool' } -> `()' #}
-{#fun webview_set_ime_composition as ^ { id `WebView', withAweString* `String', `Int', `Int', `Int' } -> `()' #}
-{#fun webview_confirm_ime_composition as ^ { id `WebView', withAweString* `String' } -> `()' #}
-{#fun webview_cancel_ime_composition as ^ { id `WebView' } -> `()' #}
-{#fun webview_login as ^ { id `WebView', `Int', withAweString* `String', withAweString* `String' } -> `()' #}
-{#fun webview_cancel_login as ^ { id `WebView', `Int' } -> `()' #}
-{#fun webview_close_javascript_dialog as ^ { id `WebView', `Int', `Bool', withAweString* `String' } -> `()' #}
+-- {#fun awe_webview_set_header_definition { id `WebView', withAweString* `String', fromIntegral `Int' , id `Ptr AweString', id `Ptr AweString' } -> `()' #}
+{#fun awe_webview_add_header_rewrite_rule { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
+{#fun awe_webview_remove_header_rewrite_rule { id `WebView', withAweString* `String' } -> `()' #}
+{#fun awe_webview_remove_header_rewrite_rules_by_definition_name { id `WebView', withAweString* `String' } -> `()' #}
+{#fun awe_webview_choose_file { id `WebView', withAweString* `String' } -> `()' #}
+{#fun awe_webview_print { id `WebView' } -> `()' #}
+{#fun awe_webview_request_scroll_data { id `WebView', withAweString* `String' } -> `()' #}
+{#fun awe_webview_find { id `WebView', `Int', withAweString* `String', `Bool', `Bool', `Bool' } -> `()' #}
+{#fun awe_webview_stop_find { id `WebView', `Bool' } -> `()' #}
+{#fun awe_webview_translate_page { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
+{#fun awe_webview_activate_ime { id `WebView', `Bool' } -> `()' #}
+{#fun awe_webview_set_ime_composition { id `WebView', withAweString* `String', `Int', `Int', `Int' } -> `()' #}
+{#fun awe_webview_confirm_ime_composition { id `WebView', withAweString* `String' } -> `()' #}
+{#fun awe_webview_cancel_ime_composition { id `WebView' } -> `()' #}
+{#fun awe_webview_login { id `WebView', `Int', withAweString* `String', withAweString* `String' } -> `()' #}
+{#fun awe_webview_cancel_login { id `WebView', `Int' } -> `()' #}
+{#fun awe_webview_close_javascript_dialog { id `WebView', `Int', `Bool', withAweString* `String' } -> `()' #}
 
 -- TODO: Make callbacks with haskell types.
 type BeginNavigationCallback = WebView -> AweString -> AweString -> IO()
 foreign import ccall "wrapper" mkBeginNavigationCallback :: BeginNavigationCallback -> IO (FunPtr BeginNavigationCallback)
-{#fun webview_set_callback_begin_navigation as ^ { id `WebView', id `FunPtr BeginNavigationCallback' } -> `()' #}
+{#fun awe_webview_set_callback_begin_navigation { id `WebView', id `FunPtr BeginNavigationCallback' } -> `()' #}
 
 type BeginLoadingCallback = WebView -> AweString -> AweString -> CInt -> AweString -> IO()
 foreign import ccall "wrapper" mkBeginLoadingCallback :: BeginLoadingCallback -> IO (FunPtr BeginLoadingCallback)
-{#fun webview_set_callback_begin_loading as ^ { id `WebView', id `FunPtr BeginLoadingCallback' } -> `()' #}
+{#fun awe_webview_set_callback_begin_loading { id `WebView', id `FunPtr BeginLoadingCallback' } -> `()' #}
 
 type FinishLoadingCallback = WebView -> IO()
 foreign import ccall "wrapper" mkFinishLoadingCallback :: FinishLoadingCallback -> IO (FunPtr FinishLoadingCallback)
-{#fun webview_set_callback_finish_loading as ^ { id `WebView', id `FunPtr FinishLoadingCallback' } -> `()' #}
+{#fun awe_webview_set_callback_finish_loading { id `WebView', id `FunPtr FinishLoadingCallback' } -> `()' #}
 
 type JSCallback = WebView -> AweString -> AweString -> JSArray -> IO()
 foreign import ccall "wrapper" mkJSCallback :: JSCallback -> IO (FunPtr JSCallback)
-{#fun webview_set_callback_js_callback as ^ { id `WebView', id `FunPtr JSCallback' } -> `()' #}
+{#fun awe_webview_set_callback_js_callback { id `WebView', id `FunPtr JSCallback' } -> `()' #}
 
 type ReciveTitleCallback = WebView -> AweString -> AweString -> IO()
 foreign import ccall "wrapper" mkReciveTitleCallback :: ReciveTitleCallback -> IO (FunPtr ReciveTitleCallback)
-{#fun webview_set_callback_receive_title as ^ { id `WebView', id `FunPtr ReciveTitleCallback' } -> `()' #}
+{#fun awe_webview_set_callback_receive_title { id `WebView', id `FunPtr ReciveTitleCallback' } -> `()' #}
 
 type ChangeTooltipCallback = WebView -> AweString -> IO()
 foreign import ccall "wrapper" mkChangeTooltipCallback :: ChangeTooltipCallback -> IO (FunPtr ChangeTooltipCallback)
-{#fun webview_set_callback_change_tooltip as ^ { id `WebView', id `FunPtr ChangeTooltipCallback' } -> `()' #}
+{#fun awe_webview_set_callback_change_tooltip { id `WebView', id `FunPtr ChangeTooltipCallback' } -> `()' #}
 
 type ChangeCursorCallback = WebView -> CInt {-CursorType-} -> IO()
 foreign import ccall "wrapper" mkChangeCursorCallback :: ChangeCursorCallback -> IO (FunPtr ChangeCursorCallback)
-{#fun webview_set_callback_change_cursor as ^ { id `WebView', id `FunPtr ChangeCursorCallback' } -> `()' #}
+{#fun awe_webview_set_callback_change_cursor { id `WebView', id `FunPtr ChangeCursorCallback' } -> `()' #}
 
 type ChangeKeyboardFocusCallback = WebView -> CUInt {-Bool-} -> IO()
 foreign import ccall "wrapper" mkChangeKeyboardFocusCallback :: ChangeKeyboardFocusCallback -> IO (FunPtr ChangeKeyboardFocusCallback)
-{#fun webview_set_callback_change_keyboard_focus as ^ { id `WebView', id `FunPtr ChangeKeyboardFocusCallback' } -> `()' #}
+{#fun awe_webview_set_callback_change_keyboard_focus { id `WebView', id `FunPtr ChangeKeyboardFocusCallback' } -> `()' #}
 
 type ChangeTargetUrlCallback = WebView -> AweString -> IO()
 foreign import ccall "wrapper" mkChangeTargetUrlCallback :: ChangeTargetUrlCallback -> IO (FunPtr ChangeTargetUrlCallback)
-{#fun webview_set_callback_change_target_url as ^ { id `WebView', id `FunPtr ChangeTargetUrlCallback' } -> `()' #}
+{#fun awe_webview_set_callback_change_target_url { id `WebView', id `FunPtr ChangeTargetUrlCallback' } -> `()' #}
 
 type OpenExternalLinkCallback = WebView -> AweString -> AweString -> IO()
 foreign import ccall "wrapper" mkOpenExternalLinkCallback :: OpenExternalLinkCallback -> IO (FunPtr OpenExternalLinkCallback)
-{#fun webview_set_callback_open_external_link as ^ { id `WebView', id `FunPtr OpenExternalLinkCallback' } -> `()' #}
+{#fun awe_webview_set_callback_open_external_link { id `WebView', id `FunPtr OpenExternalLinkCallback' } -> `()' #}
 
 type RequestDownloadCallback = WebView -> AweString -> IO()
 foreign import ccall "wrapper" mkRequestDownloadCallback :: RequestDownloadCallback -> IO (FunPtr RequestDownloadCallback)
-{#fun webview_set_callback_request_download as ^ { id `WebView', id `FunPtr RequestDownloadCallback' } -> `()' #}
+{#fun awe_webview_set_callback_request_download { id `WebView', id `FunPtr RequestDownloadCallback' } -> `()' #}
 
 type WebViewCrashedCallback = WebView -> IO()
 foreign import ccall "wrapper" mkWebViewCrashedCallback :: WebViewCrashedCallback -> IO (FunPtr WebViewCrashedCallback)
-{#fun webview_set_callback_web_view_crashed as ^ { id `WebView', id `FunPtr WebViewCrashedCallback' } -> `()' #}
+{#fun awe_webview_set_callback_web_view_crashed { id `WebView', id `FunPtr WebViewCrashedCallback' } -> `()' #}
 
 type PluginCrashedCallback = WebView -> AweString -> IO()
 foreign import ccall "wrapper" mkPluginCrashedCallback :: PluginCrashedCallback -> IO (FunPtr PluginCrashedCallback)
-{#fun webview_set_callback_plugin_crashed as ^ { id `WebView', id `FunPtr PluginCrashedCallback' } -> `()' #}
+{#fun awe_webview_set_callback_plugin_crashed { id `WebView', id `FunPtr PluginCrashedCallback' } -> `()' #}
 
 type RequestMoveCallback = WebView -> CInt -> CInt -> IO()
 foreign import ccall "wrapper" mkRequestMoveCallback :: RequestMoveCallback -> IO (FunPtr RequestMoveCallback)
-{#fun webview_set_callback_request_move as ^ { id `WebView', id `FunPtr RequestMoveCallback' } -> `()' #}
+{#fun awe_webview_set_callback_request_move { id `WebView', id `FunPtr RequestMoveCallback' } -> `()' #}
 
 type GetPageContentsCallback = WebView -> AweString -> AweString -> IO()
 foreign import ccall "wrapper" mkGetPageContentsCallback :: GetPageContentsCallback -> IO (FunPtr GetPageContentsCallback)
-{#fun webview_set_callback_get_page_contents as ^ { id `WebView', id `FunPtr GetPageContentsCallback' } -> `()' #}
+{#fun awe_webview_set_callback_get_page_contents { id `WebView', id `FunPtr GetPageContentsCallback' } -> `()' #}
 
 type DomReadyCallback = WebView -> IO()
 foreign import ccall "wrapper" mkDomReadyCallback :: DomReadyCallback -> IO (FunPtr DomReadyCallback)
-{#fun webview_set_callback_dom_ready as ^ { id `WebView', id `FunPtr DomReadyCallback' } -> `()' #}
+{#fun awe_webview_set_callback_dom_ready { id `WebView', id `FunPtr DomReadyCallback' } -> `()' #}
 
 type RequestFileChooserCallback = WebView -> CUInt {-Bool-} -> AweString -> AweString -> IO()
 foreign import ccall "wrapper" mkRequestFileChooserCallback :: RequestFileChooserCallback -> IO (FunPtr RequestFileChooserCallback)
-{#fun webview_set_callback_request_file_chooser as ^ { id `WebView', id `FunPtr RequestFileChooserCallback' } -> `()' #}
+{#fun awe_webview_set_callback_request_file_chooser { id `WebView', id `FunPtr RequestFileChooserCallback' } -> `()' #}
 
 type GetScrollDataCallback = WebView -> CInt -> CInt -> CInt -> CInt -> CInt -> IO()
 foreign import ccall "wrapper" mkGetScrollDataCallback :: GetScrollDataCallback -> IO (FunPtr GetScrollDataCallback)
-{#fun webview_set_callback_get_scroll_data as ^ { id `WebView', id `FunPtr GetScrollDataCallback' } -> `()' #}
+{#fun awe_webview_set_callback_get_scroll_data { id `WebView', id `FunPtr GetScrollDataCallback' } -> `()' #}
 
 type JsConsoleMessageCallback = WebView -> AweString -> CInt -> AweString -> IO()
 foreign import ccall "wrapper" mkJsConsoleMessageCallback :: JsConsoleMessageCallback -> IO (FunPtr JsConsoleMessageCallback)
-{#fun webview_set_callback_js_console_message as ^ { id `WebView', id `FunPtr JsConsoleMessageCallback' } -> `()' #}
+{#fun awe_webview_set_callback_js_console_message { id `WebView', id `FunPtr JsConsoleMessageCallback' } -> `()' #}
 
 -- type GetFindResultsCallback = WebView -> CInt -> CInt -> Rect -> CInt -> CUInt {-Bool-} -> IO()
 -- foreign import ccall "wrapper" mkGetFindResultsCallback :: GetFindResultsCallback -> IO (FunPtr GetFindResultsCallback)
--- {#fun webview_set_callback_get_find_results as ^ { id `WebView', id `FunPtr GetFindResultsCallback' } -> `()' #}
+-- {#fun awe_webview_set_callback_get_find_results { id `WebView', id `FunPtr GetFindResultsCallback' } -> `()' #}
 
 -- type UpdateImeCallback = WebView -> ImeState -> Rect -> IO()
 -- foreign import ccall "wrapper" mkUpdateImeCallback :: UpdateImeCallback -> IO (FunPtr UpdateImeCallback)
--- {#fun webview_set_callback_update_ime as ^ { id `WebView', id `FunPtr UpdateImeCallback' } -> `()' #}
+-- {#fun awe_webview_set_callback_update_ime { id `WebView', id `FunPtr UpdateImeCallback' } -> `()' #}
 
 type ShowContextMenuCallback = WebView -> CInt -> CInt -> CInt {-MediaType-} -> CInt -> AweString -> AweString -> AweString -> AweString -> AweString -> CUInt {-Bool-} -> CInt -> IO()
 foreign import ccall "wrapper" mkShowContextMenuCallback :: ShowContextMenuCallback -> IO (FunPtr ShowContextMenuCallback)
-{#fun webview_set_callback_show_context_menu as ^ { id `WebView', id `FunPtr ShowContextMenuCallback' } -> `()' #}
+{#fun awe_webview_set_callback_show_context_menu { id `WebView', id `FunPtr ShowContextMenuCallback' } -> `()' #}
 
 type RequestLoginCallback = WebView -> CInt -> AweString -> CUInt {-Bool-} -> AweString -> AweString -> AweString -> IO()
 foreign import ccall "wrapper" mkRequestLoginCallback :: RequestLoginCallback -> IO (FunPtr RequestLoginCallback)
-{#fun webview_set_callback_request_login as ^ { id `WebView', id `FunPtr RequestLoginCallback' } -> `()' #}
+{#fun awe_webview_set_callback_request_login { id `WebView', id `FunPtr RequestLoginCallback' } -> `()' #}
 
 type ChangeHistoryCallback = WebView -> CInt -> CInt -> IO()
 foreign import ccall "wrapper" mkChangeHistoryCallback :: ChangeHistoryCallback -> IO (FunPtr ChangeHistoryCallback)
-{#fun webview_set_callback_change_history as ^ { id `WebView', id `FunPtr ChangeHistoryCallback' } -> `()' #}
+{#fun awe_webview_set_callback_change_history { id `WebView', id `FunPtr ChangeHistoryCallback' } -> `()' #}
 
 type FinishResizeCallback = WebView -> CInt -> CInt -> IO()
 foreign import ccall "wrapper" mkFinishResizeCallback :: FinishResizeCallback -> IO (FunPtr FinishResizeCallback)
-{#fun webview_set_callback_finish_resize as ^ { id `WebView', id `FunPtr FinishResizeCallback' } -> `()' #}
+{#fun awe_webview_set_callback_finish_resize { id `WebView', id `FunPtr FinishResizeCallback' } -> `()' #}
 
 type ShowJavascriptDialogCallback = WebView -> CInt -> CInt -> AweString -> AweString -> AweString -> IO()
 foreign import ccall "wrapper" mkShowJavascriptDialogCallback :: ShowJavascriptDialogCallback -> IO (FunPtr ShowJavascriptDialogCallback)
-{#fun webview_set_callback_show_javascript_dialog as ^ { id `WebView', id `FunPtr ShowJavascriptDialogCallback' } -> `()' #}
+{#fun awe_webview_set_callback_show_javascript_dialog { id `WebView', id `FunPtr ShowJavascriptDialogCallback' } -> `()' #}
 
 {-----------------------
  - JS Value Functions  -
@@ -367,105 +367,105 @@ foreign import ccall "wrapper" mkShowJavascriptDialogCallback :: ShowJavascriptD
 
 {#enum jsvalue_type as JSValueType {underscoreToCase}#}
 
-{#fun jsvalue_create_null_value as ^ { } -> `JSValue' id #}
-{#fun jsvalue_create_bool_value as ^ { `Bool' } -> `JSValue' id #}
-{#fun jsvalue_create_integer_value as ^ { `Int' } -> `JSValue' id #}
-{#fun jsvalue_create_double_value as ^ { `Double' } -> `JSValue' id #}
-{#fun jsvalue_create_string_value as ^ { withAweString* `String' } -> `JSValue' id #}
-{#fun jsvalue_create_object_value as ^ { id `JSObject' } -> `JSValue' id #}
-{#fun jsvalue_create_array_value as ^ { id `JSArray' } -> `JSValue' id #}
-{#fun jsvalue_destroy as ^ { id `JSValue' } -> `()' #}
-{#fun jsvalue_get_type as ^ { id `JSValue' } -> `JSValueType' cToEnum #}
-{#fun jsvalue_to_string as ^ { id `JSValue' } -> `String' fromAweStringDestroy* #}
-{#fun jsvalue_to_integer as ^ { id `JSValue' } -> `Int' #}
-{#fun jsvalue_to_double as ^ { id `JSValue' } -> `Double' #}
-{#fun jsvalue_to_boolean as ^ { id `JSValue' } -> `Bool' #}
-{#fun jsvalue_get_array as ^ { id `JSValue' } -> `JSArray' id #}
-{#fun jsvalue_get_object as ^ { id `JSValue' } -> `JSObject' id #}
-{#fun jsarray_create as ^ { id `Ptr JSValue', fromIntegral `Int' } -> `JSArray' id #}
-{#fun jsarray_destroy as ^ { id `JSArray' } -> `()' #}
-{#fun jsarray_get_size as ^ { id `JSArray' } -> `Int' fromIntegral #}
-{#fun jsarray_get_element as ^ { id `JSArray', fromIntegral `Int' } -> `JSValue' id #}
+{#fun awe_jsvalue_create_null_value { } -> `JSValue' id #}
+{#fun awe_jsvalue_create_bool_value { `Bool' } -> `JSValue' id #}
+{#fun awe_jsvalue_create_integer_value { `Int' } -> `JSValue' id #}
+{#fun awe_jsvalue_create_double_value { `Double' } -> `JSValue' id #}
+{#fun awe_jsvalue_create_string_value { withAweString* `String' } -> `JSValue' id #}
+{#fun awe_jsvalue_create_object_value { id `JSObject' } -> `JSValue' id #}
+{#fun awe_jsvalue_create_array_value { id `JSArray' } -> `JSValue' id #}
+{#fun awe_jsvalue_destroy { id `JSValue' } -> `()' #}
+{#fun awe_jsvalue_get_type { id `JSValue' } -> `JSValueType' cToEnum #}
+{#fun awe_jsvalue_to_string { id `JSValue' } -> `String' fromAweStringDestroy* #}
+{#fun awe_jsvalue_to_integer { id `JSValue' } -> `Int' #}
+{#fun awe_jsvalue_to_double { id `JSValue' } -> `Double' #}
+{#fun awe_jsvalue_to_boolean { id `JSValue' } -> `Bool' #}
+{#fun awe_jsvalue_get_array { id `JSValue' } -> `JSArray' id #}
+{#fun awe_jsvalue_get_object { id `JSValue' } -> `JSObject' id #}
+{#fun awe_jsarray_create { id `Ptr JSValue', fromIntegral `Int' } -> `JSArray' id #}
+{#fun awe_jsarray_destroy { id `JSArray' } -> `()' #}
+{#fun awe_jsarray_get_size { id `JSArray' } -> `Int' fromIntegral #}
+{#fun awe_jsarray_get_element { id `JSArray', fromIntegral `Int' } -> `JSValue' id #}
 
 {-----------------------------
  - JS Value Object Functions -
  -----------------------------}
 
-{#fun jsobject_create as ^ { } -> `JSObject' id #}
-{#fun jsobject_destroy as ^ { id `JSObject' } -> `()' #}
-{#fun jsobject_has_property as ^ { id `JSObject', withAweString* `String' } -> `Bool' #}
-{#fun jsobject_get_property as ^ { id `JSObject', withAweString* `String' } -> `JSValue' id #}
-{#fun jsobject_set_property as ^ { id `JSObject', withAweString* `String', id `JSValue' } -> `()' #}
-{#fun jsobject_get_size as ^ { id `JSObject' } -> `Int' fromIntegral #}
-{#fun jsobject_get_keys as ^ { id `JSObject' } -> `JSArray' id #}
+{#fun awe_jsobject_create { } -> `JSObject' id #}
+{#fun awe_jsobject_destroy { id `JSObject' } -> `()' #}
+{#fun awe_jsobject_has_property { id `JSObject', withAweString* `String' } -> `Bool' #}
+{#fun awe_jsobject_get_property { id `JSObject', withAweString* `String' } -> `JSValue' id #}
+{#fun awe_jsobject_set_property { id `JSObject', withAweString* `String', id `JSValue' } -> `()' #}
+{#fun awe_jsobject_get_size { id `JSObject' } -> `Int' fromIntegral #}
+{#fun awe_jsobject_get_keys { id `JSObject' } -> `JSArray' id #}
 
 {---------------------------
  - Render Buffer Functions -
  ---------------------------}
 
-{#fun renderbuffer_get_width as ^ { id `RenderBuffer' } -> `Int' #}
-{#fun renderbuffer_get_height as ^ { id `RenderBuffer' } -> `Int' #}
-{#fun renderbuffer_get_rowspan as ^ { id `RenderBuffer' } -> `Int' #}
-{#fun renderbuffer_get_buffer as ^ { id `RenderBuffer' } -> `Ptr CUChar' id #}
--- {#fun renderbuffer_copy_to as ^ { id `RenderBuffer', unsigned char* dest_buffer, `Int', `Int', `Bool', `Bool' } -> `()' #}
--- {#fun renderbuffer_copy_to_float as ^ { id `RenderBuffer', float* dest_buffer } -> `()' #}
-{#fun renderbuffer_save_to_png as ^ { id `RenderBuffer', withAweString* `String', `Bool' } -> `Bool' #}
-{#fun renderbuffer_save_to_jpeg as ^ { id `RenderBuffer', withAweString* `String', `Int' } -> `Bool' #}
-{#fun renderbuffer_get_alpha_at_point as ^ { id `RenderBuffer', `Int', `Int' } -> `Int' #}
-{#fun renderbuffer_flush_alpha as ^ { id `RenderBuffer' } -> `()' #}
+{#fun awe_renderbuffer_get_width { id `RenderBuffer' } -> `Int' #}
+{#fun awe_renderbuffer_get_height { id `RenderBuffer' } -> `Int' #}
+{#fun awe_renderbuffer_get_rowspan { id `RenderBuffer' } -> `Int' #}
+{#fun awe_renderbuffer_get_buffer { id `RenderBuffer' } -> `Ptr CUChar' id #}
+-- {#fun awe_renderbuffer_copy_to { id `RenderBuffer', unsigned char* dest_buffer, `Int', `Int', `Bool', `Bool' } -> `()' #}
+-- {#fun awe_renderbuffer_copy_to_float { id `RenderBuffer', float* dest_buffer } -> `()' #}
+{#fun awe_renderbuffer_save_to_png { id `RenderBuffer', withAweString* `String', `Bool' } -> `Bool' #}
+{#fun awe_renderbuffer_save_to_jpeg { id `RenderBuffer', withAweString* `String', `Int' } -> `Bool' #}
+{#fun awe_renderbuffer_get_alpha_at_point { id `RenderBuffer', `Int', `Int' } -> `Int' #}
+{#fun awe_renderbuffer_flush_alpha { id `RenderBuffer' } -> `()' #}
 
 {------------------------
  - Resource Interceptor -
  ------------------------}
 
--- {#fun webview_set_callback_resource_request as ^ { id `WebView', resource_response* (*callback } -> `()' #}
--- {#fun webview_set_callback_resource_response as ^ { id `WebView', void (*callback } -> `()' #}
--- {#fun resource_response_create as ^ { size_t num_bytes, unsigned char* buffer, withAweString* `String' } -> `ResourceResponse' id #}
-{#fun resource_response_create_from_file as ^ { withAweString* `String' } -> `ResourceResponse' id #}
+-- {#fun awe_webview_set_callback_resource_request { id `WebView', resource_response* (*callback } -> `()' #}
+-- {#fun awe_webview_set_callback_resource_response { id `WebView', void (*callback } -> `()' #}
+-- {#fun awe_resource_response_create { size_t num_bytes, unsigned char* buffer, withAweString* `String' } -> `ResourceResponse' id #}
+{#fun awe_resource_response_create_from_file { withAweString* `String' } -> `ResourceResponse' id #}
 
 {------------------------
  - Resource Request     -
  ------------------------}
 
-{#fun resource_request_cancel as ^ { id `ResourceRequest' } -> `()' #}
-{#fun resource_request_get_url as ^ { id `ResourceRequest' } -> `String' fromAweStringDestroy* #}
-{#fun resource_request_get_method as ^ { id `ResourceRequest' } -> `String' fromAweStringDestroy* #}
-{#fun resource_request_set_method as ^ { id `ResourceRequest', withAweString* `String' } -> `()' #}
-{#fun resource_request_get_referrer as ^ { id `ResourceRequest' } -> `String' fromAweStringDestroy* #}
-{#fun resource_request_set_referrer as ^ { id `ResourceRequest', withAweString* `String' } -> `()' #}
-{#fun resource_request_get_extra_headers as ^ { id `ResourceRequest' } -> `String' fromAweStringDestroy* #}
-{#fun resource_request_set_extra_headers as ^ { id `ResourceRequest', withAweString* `String' } -> `()' #}
-{#fun resource_request_append_extra_header as ^ { id `ResourceRequest', withAweString* `String', withAweString* `String' } -> `()' #}
-{#fun resource_request_get_num_upload_elements as ^ { id `ResourceRequest' } -> `Int' fromIntegral #}
-{#fun resource_request_get_upload_element as ^ { id `ResourceRequest', fromIntegral `Int' } -> `UploadElement' id #}
-{#fun resource_request_clear_upload_elements as ^ { id `ResourceRequest' } -> `()' #}
-{#fun resource_request_append_upload_file_path as ^ { id `ResourceRequest', withAweString* `String' } -> `()' #}
-{#fun resource_request_append_upload_bytes as ^ { id `ResourceRequest', withAweString* `String' } -> `()' #}
+{#fun awe_resource_request_cancel { id `ResourceRequest' } -> `()' #}
+{#fun awe_resource_request_get_url { id `ResourceRequest' } -> `String' fromAweStringDestroy* #}
+{#fun awe_resource_request_get_method { id `ResourceRequest' } -> `String' fromAweStringDestroy* #}
+{#fun awe_resource_request_set_method { id `ResourceRequest', withAweString* `String' } -> `()' #}
+{#fun awe_resource_request_get_referrer { id `ResourceRequest' } -> `String' fromAweStringDestroy* #}
+{#fun awe_resource_request_set_referrer { id `ResourceRequest', withAweString* `String' } -> `()' #}
+{#fun awe_resource_request_get_extra_headers { id `ResourceRequest' } -> `String' fromAweStringDestroy* #}
+{#fun awe_resource_request_set_extra_headers { id `ResourceRequest', withAweString* `String' } -> `()' #}
+{#fun awe_resource_request_append_extra_header { id `ResourceRequest', withAweString* `String', withAweString* `String' } -> `()' #}
+{#fun awe_resource_request_get_num_upload_elements { id `ResourceRequest' } -> `Int' fromIntegral #}
+{#fun awe_resource_request_get_upload_element { id `ResourceRequest', fromIntegral `Int' } -> `UploadElement' id #}
+{#fun awe_resource_request_clear_upload_elements { id `ResourceRequest' } -> `()' #}
+{#fun awe_resource_request_append_upload_file_path { id `ResourceRequest', withAweString* `String' } -> `()' #}
+{#fun awe_resource_request_append_upload_bytes { id `ResourceRequest', withAweString* `String' } -> `()' #}
 
 {------------------------
  - Upload Element       -
  ------------------------}
 
-{#fun upload_element_is_file_path as ^ { id `UploadElement' } -> `Bool' #}
-{#fun upload_element_is_bytes as ^ { id `UploadElement' } -> `Bool' #}
-{#fun upload_element_get_bytes as ^ { id `UploadElement' } -> `String' fromAweStringDestroy* #}
-{#fun upload_element_get_file_path as ^ { id `UploadElement' } -> `String' fromAweStringDestroy* #}
+{#fun awe_upload_element_is_file_path { id `UploadElement' } -> `Bool' #}
+{#fun awe_upload_element_is_bytes { id `UploadElement' } -> `Bool' #}
+{#fun awe_upload_element_get_bytes { id `UploadElement' } -> `String' fromAweStringDestroy* #}
+{#fun awe_upload_element_get_file_path { id `UploadElement' } -> `String' fromAweStringDestroy* #}
 
 {------------------------
  - History Query Result -
  ------------------------}
 
-{#fun history_query_result_destroy as ^ { id `HistoryQueryResult' } -> `()' #}
-{#fun history_query_result_get_size as ^ { id `HistoryQueryResult' } -> `Int' fromIntegral #}
-{#fun history_query_result_get_entry_at_index as ^ { id `HistoryQueryResult', fromIntegral `Int' } -> `HistoryEntry' id #}
+{#fun awe_history_query_result_destroy { id `HistoryQueryResult' } -> `()' #}
+{#fun awe_history_query_result_get_size { id `HistoryQueryResult' } -> `Int' fromIntegral #}
+{#fun awe_history_query_result_get_entry_at_index { id `HistoryQueryResult', fromIntegral `Int' } -> `HistoryEntry' id #}
 
 {------------------------
  - History Entry        -
  ------------------------}
 
-{#fun history_entry_destroy as ^ { id `HistoryEntry' } -> `()' #}
-{#fun history_entry_get_url as ^ { id `HistoryEntry' } -> `String' fromAweStringDestroy* #}
-{#fun history_entry_get_title as ^ { id `HistoryEntry' } -> `String' fromAweStringDestroy* #}
-{#fun history_entry_get_visit_time as ^ { id `HistoryEntry' } -> `Double' #}
-{#fun history_entry_get_visit_count as ^ { id `HistoryEntry' } -> `Int' #}
+{#fun awe_history_entry_destroy { id `HistoryEntry' } -> `()' #}
+{#fun awe_history_entry_get_url { id `HistoryEntry' } -> `String' fromAweStringDestroy* #}
+{#fun awe_history_entry_get_title { id `HistoryEntry' } -> `String' fromAweStringDestroy* #}
+{#fun awe_history_entry_get_visit_time { id `HistoryEntry' } -> `Double' #}
+{#fun awe_history_entry_get_visit_count { id `HistoryEntry' } -> `Int' #}
 
