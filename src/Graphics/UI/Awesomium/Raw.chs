@@ -227,7 +227,6 @@ withAweString str =
 {#fun awe_webview_cancel_login { id `WebView', `Int' } -> `()' #}
 {#fun awe_webview_close_javascript_dialog { id `WebView', `Int', `Bool', withAweString* `String' } -> `()' #}
 
--- TODO: Make callbacks with haskell types.
 type BeginNavigationCallback = WebView -> AweString -> AweString -> IO()
 foreign import ccall "wrapper" mkBeginNavigationCallback :: BeginNavigationCallback -> IO (FunPtr BeginNavigationCallback)
 {#fun awe_webview_set_callback_begin_navigation { id `WebView', id `FunPtr BeginNavigationCallback' } -> `()' #}
@@ -244,9 +243,9 @@ type JSCallback = WebView -> AweString -> AweString -> JSArray -> IO()
 foreign import ccall "wrapper" mkJSCallback :: JSCallback -> IO (FunPtr JSCallback)
 {#fun awe_webview_set_callback_js_callback { id `WebView', id `FunPtr JSCallback' } -> `()' #}
 
-type ReciveTitleCallback = WebView -> AweString -> AweString -> IO()
-foreign import ccall "wrapper" mkReciveTitleCallback :: ReciveTitleCallback -> IO (FunPtr ReciveTitleCallback)
-{#fun awe_webview_set_callback_receive_title { id `WebView', id `FunPtr ReciveTitleCallback' } -> `()' #}
+type ReceiveTitleCallback = WebView -> AweString -> AweString -> IO()
+foreign import ccall "wrapper" mkReceiveTitleCallback :: ReceiveTitleCallback -> IO (FunPtr ReceiveTitleCallback)
+{#fun awe_webview_set_callback_receive_title { id `WebView', id `FunPtr ReceiveTitleCallback' } -> `()' #}
 
 type ChangeTooltipCallback = WebView -> AweString -> IO()
 foreign import ccall "wrapper" mkChangeTooltipCallback :: ChangeTooltipCallback -> IO (FunPtr ChangeTooltipCallback)
