@@ -70,24 +70,12 @@ data DHistoryEntry
 {#enum _awe_can_edit_flags as CanEditFlags {underscoreToCase} with prefix = "AWE_" #}
 {#enum _awe_dialog_flags as DialogFlags {underscoreToCase} with prefix = "AWE_" #}
 
-{- TODO
-
--- These are flags, remember!
-WebkeyModifiers
-MediaState
-CanEditFlags
-DialogFlags
-
-typedef struct _awe_webkeyboardevent
-{
-    awe_webkey_type type;
-    int modifiers;
-    int virtual_key_code;
-    int native_key_code;
-    wchar16 text[4];
-    wchar16 unmodified_text[4];
-    bool is_system_key;
-} awe_webkeyboardevent;
+{-
+These are flags, remember!
+    * WebkeyModifiers
+    * MediaState
+    * CanEditFlags
+    * DialogFlags
 -}
 
 data WebkeyboardEvent = WebkeyboardEvent
@@ -98,8 +86,6 @@ data WebkeyboardEvent = WebkeyboardEvent
     , wkeText           :: Char
     , wkeUnmodifiedText :: Char
     , wkeIsSystemKey    :: Bool }
-
-
 
 instance Storable WebkeyboardEvent where
     alignment _ = {#alignof awe_webkeyboardevent#}
@@ -115,7 +101,7 @@ instance Storable WebkeyboardEvent where
         <*> (fromWkeText =<<  ({#get awe_webkeyboardevent.unmodified_text  #} p))
         <*> fmap toBool       ({#get awe_webkeyboardevent.is_system_key    #} p)
     poke p r = do
-        let toWkeText l = let {l' = fromIntegral . ord $ l} in newArray [l',0,0,0] -- memory leeks here, probably
+        let toWkeText l = let {l' = fromIntegral . ord $ l} in newArray [l',0,0,0] -- memory leaks here, probably
         ({#set awe_webkeyboardevent.type             #}) p (cFromEnum     $ wkeType           r)
         ({#set awe_webkeyboardevent.modifiers        #}) p (fromIntegral  $ wkeModifiers      r)
         ({#set awe_webkeyboardevent.virtual_key_code #}) p (fromIntegral  $ wkeVirtualKeyCode r)
