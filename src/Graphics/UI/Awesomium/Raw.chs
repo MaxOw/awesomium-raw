@@ -1,6 +1,7 @@
 {-# LANGUAGE ForeignFunctionInterface, EmptyDataDecls #-}
 module Graphics.UI.Awesomium.Raw where
 
+import Data.Char (chr, ord)
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.Marshal
@@ -89,6 +90,40 @@ typedef struct _awe_webkeyboardevent
 } awe_webkeyboardevent;
 -}
 
+data WebkeyboardEvent = WebkeyboardEvent
+    { wkeType           :: WebkeyType
+    , wkeModifiers      :: Int
+    , wkeVirtualKeyCode :: Int
+    , wkeNativeKeyCode  :: Int
+    , wkeText           :: Char
+    , wkeUnmodifiedText :: Char
+    , wkeIsSystemKey    :: Bool }
+
+
+
+instance Storable WebkeyboardEvent where
+    alignment _ = {#alignof awe_webkeyboardevent#}
+    sizeOf _ = {#sizeof awe_webkeyboardevent#}
+    peek p =
+        let {fromWkeText = return . chr . fromIntegral . head <=< peekArray 4} in
+        WebkeyboardEvent
+        <$> fmap cToEnum      ({#get awe_webkeyboardevent.type             #} p)
+        <*> fmap fromIntegral ({#get awe_webkeyboardevent.modifiers        #} p)
+        <*> fmap fromIntegral ({#get awe_webkeyboardevent.virtual_key_code #} p)
+        <*> fmap fromIntegral ({#get awe_webkeyboardevent.native_key_code  #} p)
+        <*> (fromWkeText =<<  ({#get awe_webkeyboardevent.text             #} p))
+        <*> (fromWkeText =<<  ({#get awe_webkeyboardevent.unmodified_text  #} p))
+        <*> fmap toBool       ({#get awe_webkeyboardevent.is_system_key    #} p)
+    poke p r = do
+        let toWkeText l = let {l' = fromIntegral . ord $ l} in newArray [l',0,0,0] -- memory leeks here, probably
+        ({#set awe_webkeyboardevent.type             #}) p (cFromEnum     $ wkeType           r)
+        ({#set awe_webkeyboardevent.modifiers        #}) p (fromIntegral  $ wkeModifiers      r)
+        ({#set awe_webkeyboardevent.virtual_key_code #}) p (fromIntegral  $ wkeVirtualKeyCode r)
+        ({#set awe_webkeyboardevent.native_key_code  #}) p (fromIntegral  $ wkeNativeKeyCode  r)
+        ({#set awe_webkeyboardevent.text             #}) p =<< (toWkeText $ wkeText           r)
+        ({#set awe_webkeyboardevent.unmodified_text  #}) p =<< (toWkeText $ wkeUnmodifiedText r)
+        ({#set awe_webkeyboardevent.is_system_key    #}) p (fromBool      $ wkeIsSystemKey    r)
+        
 data Rect = Rect
     { rectX      :: Int
     , rectY      :: Int
@@ -100,15 +135,15 @@ instance Storable Rect where
     alignment _ = {#alignof awe_rect#}
     sizeOf _ = {#sizeof awe_rect#}
     peek p = let f = fmap fromIntegral in Rect
-        <$> f ({#get awe_rect.x#}      p)
-        <*> f ({#get awe_rect.y#}      p)
-        <*> f ({#get awe_rect.width#}  p)
-        <*> f ({#get awe_rect.height#} p)
+        <$> f ({#get awe_rect.x      #} p)
+        <*> f ({#get awe_rect.y      #} p)
+        <*> f ({#get awe_rect.width  #} p)
+        <*> f ({#get awe_rect.height #} p)
     poke p r = do
-        ({#set awe_rect.x#})      p (fromIntegral $ rectX r)
-        ({#set awe_rect.y#})      p (fromIntegral $ rectY r)
-        ({#set awe_rect.width#})  p (fromIntegral $ rectWidth r)
-        ({#set awe_rect.height#}) p (fromIntegral $ rectHeight r)
+        ({#set awe_rect.x      #}) p (fromIntegral $ rectX      r)
+        ({#set awe_rect.y      #}) p (fromIntegral $ rectY      r)
+        ({#set awe_rect.width  #}) p (fromIntegral $ rectWidth  r)
+        ({#set awe_rect.height #}) p (fromIntegral $ rectHeight r)
 
 {-
 #ifdef _WIN32
@@ -203,10 +238,12 @@ withAweString str =
 {#fun awe_webview_set_object_callback { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
 {#fun awe_webview_is_loading_page { id `WebView' } -> `Bool' #}
 {#fun awe_webview_is_dirty { id `WebView' } -> `Bool' #}
+
 foreign import ccall safe "Graphics/UI/Awesomium/Raw.chs.h awe_webview_get_dirty_bounds"
-  awe_webview_get_dirty_bounds'_ :: ((WebView) -> (IO (Ptr Rect)))
+  awe_webview_get_dirty_bounds'_ :: WebView -> IO (Ptr Rect)
 awe_webview_get_dirty_bounds :: WebView -> IO (Rect)
 awe_webview_get_dirty_bounds = peek <=< awe_webview_get_dirty_bounds'_
+
 {#fun awe_webview_render { id `WebView' } -> `RenderBuffer' id #}
 {#fun awe_webview_pause_rendering { id `WebView' } -> `()' #}
 {#fun awe_webview_resume_rendering { id `WebView' } -> `()' #}
@@ -214,7 +251,12 @@ awe_webview_get_dirty_bounds = peek <=< awe_webview_get_dirty_bounds'_
 {#fun awe_webview_inject_mouse_down { id `WebView', cFromEnum `MouseButton' } -> `()' #}
 {#fun awe_webview_inject_mouse_up { id `WebView', cFromEnum `MouseButton' } -> `()' #}
 {#fun awe_webview_inject_mouse_wheel { id `WebView', `Int', `Int' } -> `()' #}
--- {#fun awe_webview_inject_keyboard_event { id `WebView', webkeyboardevent key_event } -> `()' #}
+
+foreign import ccall safe "Graphics/UI/Awesomium/Raw.chs.h awe_webview_inject_keyboard_event"
+  awe_webview_inject_keyboard_event'_ :: WebView -> Ptr WebkeyboardEvent -> IO ()
+awe_webview_inject_keyboard_event :: WebView -> WebkeyboardEvent -> IO ()
+awe_webview_inject_keyboard_event wv e = with e $ \e' -> 
+    awe_webview_inject_keyboard_event'_ wv e'
 
 #ifdef _WIN32
 -- {#fun awe_webview_inject_keyboard_event_win { id `WebView', UINT msg, WPARAM wparam, LPARAM lparam } -> `()' #}
@@ -238,8 +280,20 @@ awe_webview_get_dirty_bounds = peek <=< awe_webview_get_dirty_bounds'_
 {#fun awe_webview_set_url_filtering_mode { id `WebView', cFromEnum `UrlFilteringMode' } -> `()' #}
 {#fun awe_webview_add_url_filter { id `WebView', withAweString* `String' } -> `()' #}
 {#fun awe_webview_clear_all_url_filters { id `WebView' } -> `()' #}
--- TODO: webview_set_header_definition :: WebView -> String -> [(String, String)] -> IO ()
--- {#fun awe_webview_set_header_definition { id `WebView', withAweString* `String', fromIntegral `Int' , id `Ptr AweString', id `Ptr AweString' } -> `()' #}
+
+foreign import ccall safe "Graphics/UI/Awesomium/Raw.chs.h awe_webview_set_header_definition"
+  awe_webview_set_header_definition'_ :: ((WebView) -> ((AweString) -> (CULong -> ((Ptr (AweString)) -> ((Ptr (AweString)) -> (IO ()))))))
+awe_webview_set_header_definition :: WebView -> String -> [(String, String)] -> IO ()
+awe_webview_set_header_definition wv n l =
+    withAweString n $ \n' -> 
+    let (fns, fvs) = unzip l in
+    withMany withAweString fns $ \ns ->
+    withArray ns $ \ns' ->
+    withMany withAweString fvs $ \vs ->
+    withArray vs $ \vs' ->
+    let len' = fromIntegral . length $ l in
+    awe_webview_set_header_definition'_ wv n' len' ns' vs'
+
 {#fun awe_webview_add_header_rewrite_rule { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
 {#fun awe_webview_remove_header_rewrite_rule { id `WebView', withAweString* `String' } -> `()' #}
 {#fun awe_webview_remove_header_rewrite_rules_by_definition_name { id `WebView', withAweString* `String' } -> `()' #}
