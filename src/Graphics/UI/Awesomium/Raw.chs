@@ -6,7 +6,10 @@ import Foreign.C.String
 import Foreign.Marshal
 import Foreign.Ptr
 import Foreign.Storable
+import Control.Monad ((<=<))
+import Control.Applicative
 import Control.Exception (bracket)
+
 import C2HS
 
 {#context prefix = "awe"#}
@@ -54,7 +57,7 @@ data DHistoryQueryResult
 data DHistoryEntry
 {#pointer *history_entry as HistoryEntry -> DHistoryEntry #}
 
-{#enum loglevel as LogLevel {underscoreToCase}  with prefix = "AWE_LL_" deriving (Show, Read, Eq)#}
+{#enum loglevel as LogLevel {underscoreToCase} with prefix = "AWE_LL_" deriving (Show, Read, Eq)#}
 {#enum mousebutton as MouseButton {underscoreToCase}#}
 {#enum url_filtering_mode as UrlFilteringMode {underscoreToCase}#}
 {#enum webkey_type as WebkeyType {underscoreToCase}#}
@@ -67,6 +70,13 @@ data DHistoryEntry
 {#enum _awe_dialog_flags as DialogFlags {underscoreToCase} with prefix = "AWE_" #}
 
 {- TODO
+
+-- These are flags, remember!
+WebkeyModifiers
+MediaState
+CanEditFlags
+DialogFlags
+
 typedef struct _awe_webkeyboardevent
 {
     awe_webkey_type type;
@@ -75,14 +85,32 @@ typedef struct _awe_webkeyboardevent
     int native_key_code;
     wchar16 text[4];
     wchar16 unmodified_text[4];
-    `Bool';
+    bool is_system_key;
 } awe_webkeyboardevent;
+-}
 
-typedef struct _awe_rect
-{
-    int x, y, width, height;
-} awe_rect;
+data Rect = Rect
+    { rectX      :: Int
+    , rectY      :: Int
+    , rectWidth  :: Int
+    , rectHeight :: Int }
+    deriving (Eq, Show)
 
+instance Storable Rect where
+    alignment _ = {#alignof awe_rect#}
+    sizeOf _ = {#sizeof awe_rect#}
+    peek p = let f = fmap fromIntegral in Rect
+        <$> f ({#get awe_rect.x#}      p)
+        <*> f ({#get awe_rect.y#}      p)
+        <*> f ({#get awe_rect.width#}  p)
+        <*> f ({#get awe_rect.height#} p)
+    poke p r = do
+        ({#set awe_rect.x#})      p (fromIntegral $ rectX r)
+        ({#set awe_rect.y#})      p (fromIntegral $ rectY r)
+        ({#set awe_rect.width#})  p (fromIntegral $ rectWidth r)
+        ({#set awe_rect.height#}) p (fromIntegral $ rectHeight r)
+
+{-
 #ifdef _WIN32
 {#fun awe_is_child_process { HINSTANCE hInstance } -> `Bool' #}
 {#fun awe_child_process_main { HINSTANCE hInstance } -> `Int' #}
@@ -105,7 +133,6 @@ typedef struct _awe_rect
 {#fun awe_string_get_length { id `AweString' } -> `Int' fromIntegral #}
 -- {#fun awe_string_get_utf16 { id `AweString' } -> `String' #}
 -- {#fun awe_string_to_wide { id `AweString' , `String'& } -> `Int' #}
--- {#fun awe_string_to_utf8 { id `AweString' , id- `String' peekCString*, id `()' } -> `Int' #}
 
 foreign import ccall "Graphics/UI/Awesomium/Raw.chs.h awe_string_to_utf8"
     awe_string_to_utf8'_ :: AweString -> Ptr CChar -> CULong -> IO CInt
@@ -176,7 +203,10 @@ withAweString str =
 {#fun awe_webview_set_object_callback { id `WebView', withAweString* `String', withAweString* `String' } -> `()' #}
 {#fun awe_webview_is_loading_page { id `WebView' } -> `Bool' #}
 {#fun awe_webview_is_dirty { id `WebView' } -> `Bool' #}
--- {#fun awe_webview_get_dirty_bounds { id `WebView' } -> rect #}
+foreign import ccall safe "Graphics/UI/Awesomium/Raw.chs.h awe_webview_get_dirty_bounds"
+  awe_webview_get_dirty_bounds'_ :: ((WebView) -> (IO (Ptr Rect)))
+awe_webview_get_dirty_bounds :: WebView -> IO (Rect)
+awe_webview_get_dirty_bounds = peek <=< awe_webview_get_dirty_bounds'_
 {#fun awe_webview_render { id `WebView' } -> `RenderBuffer' id #}
 {#fun awe_webview_pause_rendering { id `WebView' } -> `()' #}
 {#fun awe_webview_resume_rendering { id `WebView' } -> `()' #}
@@ -303,13 +333,15 @@ type JsConsoleMessageCallback = WebView -> AweString -> CInt -> AweString -> IO(
 foreign import ccall "wrapper" mkJsConsoleMessageCallback :: JsConsoleMessageCallback -> IO (FunPtr JsConsoleMessageCallback)
 {#fun awe_webview_set_callback_js_console_message { id `WebView', id `FunPtr JsConsoleMessageCallback' } -> `()' #}
 
--- type GetFindResultsCallback = WebView -> CInt -> CInt -> Rect -> CInt -> CUInt {-Bool-} -> IO()
--- foreign import ccall "wrapper" mkGetFindResultsCallback :: GetFindResultsCallback -> IO (FunPtr GetFindResultsCallback)
--- {#fun awe_webview_set_callback_get_find_results { id `WebView', id `FunPtr GetFindResultsCallback' } -> `()' #}
+type GetFindResultsCallback = WebView -> CInt -> CInt -> Ptr Rect -> CInt -> CUInt {-Bool-} -> IO()
+foreign import ccall "wrapper" mkGetFindResultsCallback :: GetFindResultsCallback -> IO (FunPtr GetFindResultsCallback)
+foreign import ccall safe "Graphics/UI/Awesomium/Raw.chs.h awe_webview_set_callback_get_find_results"
+    awe_webview_set_callback_get_find_results :: WebView -> FunPtr GetFindResultsCallback -> IO ()
 
--- type UpdateImeCallback = WebView -> ImeState -> Rect -> IO()
--- foreign import ccall "wrapper" mkUpdateImeCallback :: UpdateImeCallback -> IO (FunPtr UpdateImeCallback)
--- {#fun awe_webview_set_callback_update_ime { id `WebView', id `FunPtr UpdateImeCallback' } -> `()' #}
+type UpdateImeCallback = WebView -> CInt {-ImeState-} -> Ptr Rect -> IO()
+foreign import ccall "wrapper" mkUpdateImeCallback :: UpdateImeCallback -> IO (FunPtr UpdateImeCallback)
+foreign import ccall safe "Graphics/UI/Awesomium/Raw.chs.h awe_webview_set_callback_get_find_results"
+    awe_webview_set_callback_update_ime :: WebView -> FunPtr UpdateImeCallback -> IO ()
 
 type ShowContextMenuCallback = WebView -> CInt -> CInt -> CInt {-MediaType-} -> CInt -> AweString -> AweString -> AweString -> AweString -> AweString -> CUInt {-Bool-} -> CInt -> IO()
 foreign import ccall "wrapper" mkShowContextMenuCallback :: ShowContextMenuCallback -> IO (FunPtr ShowContextMenuCallback)
