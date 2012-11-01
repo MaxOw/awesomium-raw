@@ -32,6 +32,8 @@ cFromEnum  = fromIntegral . fromEnum
 
 ----------------------------------------------------------------------
 
+{#context prefix = "awe"#}
+#include "keyb.h"
 
 type WChar16 = {#type wchar16#}
 type Int64 = {#type int64#}
@@ -116,14 +118,26 @@ instance Storable WebkeyboardEvent where
         <*> (fromWkeText =<<  ({#get awe_webkeyboardevent.unmodified_text  #} p))
         <*> fmap toBool       ({#get awe_webkeyboardevent.is_system_key    #} p)
     poke p r = do
-        let toWkeText l = let {l' = fromIntegral . ord $ l} in newArray [l',0,0,0] -- memory leaks here, probably
         ({#set awe_webkeyboardevent.type             #}) p (cFromEnum     $ wkeType           r)
         ({#set awe_webkeyboardevent.modifiers        #}) p (fromIntegral  $ wkeModifiers      r)
         ({#set awe_webkeyboardevent.virtual_key_code #}) p (fromIntegral  $ wkeVirtualKeyCode r)
         ({#set awe_webkeyboardevent.native_key_code  #}) p (fromIntegral  $ wkeNativeKeyCode  r)
-        ({#set awe_webkeyboardevent.text             #}) p =<< (toWkeText $ wkeText           r)
-        ({#set awe_webkeyboardevent.unmodified_text  #}) p =<< (toWkeText $ wkeUnmodifiedText r)
+
+{- It would be nice if c2hs supported the offsetof hook as
+   proposed here: http://hackage.haskell.org/trac/c2hs/ticket/22
+   then I could simply write this as:
+        
+        pokeArray (plusPtr p {#offsetof awe_webkeyboardevent.text           #}) $ toWkeText (wkeText           r)
+        pokeArray (plusPtr p {#offsetof awe_webkeyboardevent.unmodified_text#}) $ toWkeText (wkeUnmodifiedText r)
+        
+-}
+        pokeArray (plusPtr p (4*{#alignof awe_webkeyboardevent#} + 0)) $ toWkeText (wkeText           r)
+        pokeArray (plusPtr p (4*{#alignof awe_webkeyboardevent#} + 8)) $ toWkeText (wkeUnmodifiedText r)
+        
         ({#set awe_webkeyboardevent.is_system_key    #}) p (fromBool      $ wkeIsSystemKey    r)
+        where
+            toWkeText :: Char -> [WChar16]
+            toWkeText l = [cFromEnum l, 0, 0, 0]
         
 data Rect = Rect
     { rectX      :: Int
@@ -240,10 +254,11 @@ withAweString str =
 {#fun awe_webview_is_loading_page { id `WebView' } -> `Bool' #}
 {#fun awe_webview_is_dirty { id `WebView' } -> `Bool' #}
 
-foreign import ccall safe "Graphics/UI/Awesomium/Raw.chs.h awe_webview_get_dirty_bounds"
-  awe_webview_get_dirty_bounds'_ :: WebView -> IO (Ptr Rect)
+foreign import ccall safe "keyb.h awe_webview_get_dirty_bounds_wrapper"
+  awe_webview_get_dirty_bounds'_ :: WebView -> Ptr Rect -> IO ()
 awe_webview_get_dirty_bounds :: WebView -> IO (Rect)
-awe_webview_get_dirty_bounds = peek <=< awe_webview_get_dirty_bounds'_
+awe_webview_get_dirty_bounds wv = alloca $ \p ->
+    awe_webview_get_dirty_bounds'_ wv p >> peek p
 
 {#fun awe_webview_render { id `WebView' } -> `RenderBuffer' id #}
 {#fun awe_webview_pause_rendering { id `WebView' } -> `()' #}
@@ -253,7 +268,7 @@ awe_webview_get_dirty_bounds = peek <=< awe_webview_get_dirty_bounds'_
 {#fun awe_webview_inject_mouse_up { id `WebView', cFromEnum `MouseButton' } -> `()' #}
 {#fun awe_webview_inject_mouse_wheel { id `WebView', `Int', `Int' } -> `()' #}
 
-foreign import ccall safe "Graphics/UI/Awesomium/Raw.chs.h awe_webview_inject_keyboard_event"
+foreign import ccall safe "keyb.h awe_webview_inject_keyboard_event_wrapper"
   awe_webview_inject_keyboard_event'_ :: WebView -> Ptr WebkeyboardEvent -> IO ()
 awe_webview_inject_keyboard_event :: WebView -> WebkeyboardEvent -> IO ()
 awe_webview_inject_keyboard_event wv e = with e $ \e' -> 
