@@ -9,7 +9,9 @@ You will need Awesomium library installed on your system, ideally in
 `extra-lib-dirs:` in `.cabal` file.
 
 ## TODO ##
-1. Fix possible leak in WebkeyboardEvent poke implementation
+1. Fix:
+    * awe_webview_set_callback_get_find_results
+    * awe_webview_set_callback_update_ime
 2. Add bindings to the fallowing:
     * awe_is_child_process
     * awe_child_process_main
