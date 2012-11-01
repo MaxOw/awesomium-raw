@@ -11,12 +11,27 @@ import Control.Monad ((<=<))
 import Control.Applicative
 import Control.Exception (bracket)
 
-import C2HS
+----------------------------------------------------------------------
+-- Some marshalling functions originaly from C2HS
 
-{#context prefix = "awe"#}
+-- Strings with explicit length
+withCStringLenIntConv :: Num n => String -> ((CString, n) -> IO a) -> IO a
+withCStringLenIntConv s f    = withCStringLen s $ \(p, n) -> f (p, fromIntegral n)
 
-#define bool uint
-#include "awesomium_capi.h"
+-- Integral conversion
+cIntConv :: (Integral a, Integral b) => a -> b
+cIntConv  = fromIntegral
+
+-- Convert a C enumeration to Haskell.
+cToEnum :: (Integral i, Enum e) => i -> e
+cToEnum  = toEnum . fromIntegral
+
+-- Convert a Haskell enumeration to C.
+cFromEnum :: (Enum e, Integral i) => e -> i
+cFromEnum  = fromIntegral . fromEnum
+
+----------------------------------------------------------------------
+
 
 type WChar16 = {#type wchar16#}
 type Int64 = {#type int64#}
