@@ -9,6 +9,7 @@ maintainer:          Maksymilian.Owsianny+AwesomiumRaw@gmail.com
 category:            Graphics
 build-type:          Simple
 cabal-version:       >=1.8
+--extra-source-files:  cbits/keyb.h
 
 library
   exposed-modules:  Graphics.UI.Awesomium.Raw
@@ -16,5 +17,9 @@ library
   build-depends:    base ==4.5.*
   hs-source-dirs:   src
   include-dirs:     include
+  includes:         keyb.h
+  c-sources:        cbits/keyb.c
   extra-libraries:  awesomium-1.6.5
   extra-lib-dirs:   /usr/lib/awesomium-1.6.5
+  --ghc-options:      -Wall
+  cc-options:       -ffast-math -std=gnu99
