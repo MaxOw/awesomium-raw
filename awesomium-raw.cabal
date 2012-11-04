@@ -1,25 +1,43 @@
 
-name:                awesomium-raw
-version:             0.1.0.0
-synopsis:            Low-level Awesomium bindings.
-license:             LGPL-3
-license-file:        LICENSE
-author:              Maksymilian Owsianny
-maintainer:          Maksymilian.Owsianny+AwesomiumRaw@gmail.com
-category:            Graphics
-build-type:          Simple
-cabal-version:       >=1.8
---extra-source-files:  cbits/keyb.h
+Name:                awesomium-raw
+Version:             0.1.0.0
+Synopsis:            Low-level Awesomium bindings.
+License:             LGPL-3
+License-File:        LICENSE
+Copyright:           (c) 2012 Maksymilian Owsianny
+Author:              Maksymilian Owsianny
+Maintainer:          Maksymilian.Owsianny+AwesomiumRaw@gmail.com
+Bug-Reports:         https://github.com/MaxOw/awesomium-raw/issues
+Category:            Graphics, Web
+Build-Type:          Simple
+Stability:           Experimental
+Cabal-Version:       >=1.8
 
-library
-  exposed-modules:  Graphics.UI.Awesomium.Raw
-  build-tools:      c2hs
-  build-depends:    base ==4.5.*
-  hs-source-dirs:   src
-  include-dirs:     include
-  includes:         keyb.h
-  c-sources:        cbits/keyb.c
-  extra-libraries:  awesomium-1.6.5
-  extra-lib-dirs:   /usr/lib/awesomium-1.6.5
-  --ghc-options:      -Wall
-  cc-options:       -ffast-math -std=gnu99
+Extra-Source-Files:  include/awesomium_capi.h
+                  ,  include/Awesomium/PlatformUtils.h
+                  ,  include/keyb.h
+                  ,  cbits/keyb.c
+
+Description:         This package contains raw bindings to Awesomium
+                     (<http://awesomium.com>). For more user friendly,
+                     high-level bindings see here
+                     (<http://hackage.haskell.org/package/awesomium>).
+                     Also, if you plan to integrate Awesomium with
+                     GLUT you can check out this package
+                     (<http://hackage.haskell.org/package/awesomium-glut>).
+
+Source-Repository head
+  Type:     git
+  Location: https://github.com/MaxOw/awesomium-raw.git
+
+Library
+  Exposed-Modules:  Graphics.UI.Awesomium.Raw
+  Build-Tools:      c2hs
+  Build-Depends:    base ==4.5.*
+  Hs-Source-Dirs:   src
+  Include-Dirs:     include
+  Includes:         keyb.h
+  C-Sources:        cbits/keyb.c
+  Extra-Libraries:  awesomium-1.6.5
+  Extra-Lib-Dirs:   /usr/lib/awesomium-1.6.5
+  Cc-Options:       -ffast-math -std=gnu99

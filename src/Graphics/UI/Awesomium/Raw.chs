@@ -1,3 +1,21 @@
+----------------------------------------------------------------------
+-- |
+-- Module      :  Graphics.UI.Awesomium.Raw
+-- Copyright   :  (c) 2012 Maksymilian Owsianny
+-- License     :  LGPL-3 (see the file LICENSE)
+-- 
+-- Maintainer  :  Maksymilian.Owsianny+AwesomiumRaw@gmail.com
+-- Stability   :  Experimental
+-- Portability :  Portable? (needs FFI)
+--
+-- This module contains raw bindings to Awesomium 
+-- (<http://awesomium.com>). For more user friendly, high-level
+-- bindings see here (<http://hackage.haskell.org/package/awesomium>).
+-- Also, if you plan to integrate Awesomium with GLUT you can
+-- check out this package
+-- (<http://hackage.haskell.org/package/awesomium-glut>).
+----------------------------------------------------------------------
+
 {-# LANGUAGE ForeignFunctionInterface, EmptyDataDecls #-}
 module Graphics.UI.Awesomium.Raw where
 
@@ -16,7 +34,7 @@ import Control.Exception (bracket)
 
 -- Strings with explicit length
 withCStringLenIntConv :: Num n => String -> ((CString, n) -> IO a) -> IO a
-withCStringLenIntConv s f    = withCStringLen s $ \(p, n) -> f (p, fromIntegral n)
+withCStringLenIntConv s f = withCStringLen s $ \(p, n) -> f (p, fromIntegral n)
 
 -- Integral conversion
 cIntConv :: (Integral a, Integral b) => a -> b
@@ -38,40 +56,40 @@ cFromEnum  = fromIntegral . fromEnum
 type WChar16 = {#type wchar16#}
 type Int64 = {#type int64#}
 
--- | WebView instance
+-- WebView instance
 data DWebView
 {#pointer *webview as WebView -> DWebView #}
--- | JSValue instance
+-- JSValue instance
 data DJSValue
 {#pointer *jsvalue as JSValue -> DJSValue #}
--- | JSArray instance
+-- JSArray instance
 data DJSArray
 {#pointer *jsarray as JSArray -> DJSArray #}
--- | JSObject instance
+-- JSObject instance
 data DJSObject
 {#pointer *jsobject as JSObject -> DJSObject #}
--- | RenderBuffer instance, owned by the WebView
+-- RenderBuffer instance, owned by the WebView
 data DRenderBuffer
 {#pointer *renderbuffer as RenderBuffer -> DRenderBuffer #}
--- | HeaderDefinition instance
+-- HeaderDefinition instance
 data DHeaderDefinition
 {#pointer *header_definition as HeaderDefinition -> DHeaderDefinition #}
--- | ResourceResponse instance
+-- ResourceResponse instance
 data DResourceResponse
 {#pointer *resource_response as ResourceResponse -> DResourceResponse #}
--- | ResourceRequest instance
+-- ResourceRequest instance
 data DResourceRequest
 {#pointer *resource_request as ResourceRequest -> DResourceRequest #}
--- | UploadElement instance
+-- UploadElement instance
 data DUploadElement
 {#pointer *upload_element as UploadElement -> DUploadElement #}
--- | String instance
+-- String instance
 data DAweString
 {#pointer *awe_string as AweString -> DAweString #}
--- | HistoryQueryResult instance
+-- HistoryQueryResult instance
 data DHistoryQueryResult
 {#pointer *history_query_result as HistoryQueryResult -> DHistoryQueryResult #}
--- | HistoryEntry instance
+-- HistoryEntry instance
 data DHistoryEntry
 {#pointer *history_entry as HistoryEntry -> DHistoryEntry #}
 
